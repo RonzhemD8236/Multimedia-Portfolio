@@ -311,3 +311,48 @@ nav {
     padding: 80px 24px 48px;
   }
 }
+
+@media (max-width: 768px) {
+
+  /* Fix nav wrapping and overlap */
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 6%;
+    gap: 6px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Push hero down more to account for taller nav on mobile */
+  .project-hero {
+    padding: 140px 6% 48px;
+  }
+
+  /* Celestial image fix */
+  .celestial-img-wrap {
+    min-height: 260px;
+    height: 260px;
+  }
+
+  .celestial-img {
+    width: 100%;
+    height: 260px;
+    min-height: unset;
+    object-fit: cover;
+    margin: 0;
+  }
+
+  .celestial-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .celestial-info {
+    padding: 28px;
+  }
+}

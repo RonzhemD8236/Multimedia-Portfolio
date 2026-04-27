@@ -8,9 +8,9 @@
 </head>
 <body>
 
-  <nav>
+  <nav role="navigation" aria-label="Main navigation">
     <div class="nav-logo">
-      <img src="images/sun.png" alt="Sun" class="nav-sun" />
+      <img src="images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
       Multimedia Portfolio
     </div>
     <ul class="nav-links">
@@ -20,48 +20,48 @@
     </ul>
   </nav>
 
-  <main>
+  <main id="main-content">
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" aria-label="Hero section">
       <h1 class="hero-title">Multimedia Portfolio</h1>
-      <p class="hero-sub">this portfolio shows my creative work in retroscoping<br>and 3d rendering.</p>
-      <a href="#projects" class="scroll-btn">View Projects ↓</a>
+      <p class="hero-sub">This portfolio shows my creative work in rotoscoping<br aria-hidden="true" />and 3D rendering.</p>
+      <a href="#projects" class="scroll-btn" aria-label="Scroll down to view projects">View Projects ↓</a>
     </section>
 
     <!-- FEATURED PROJECTS -->
-    <section id="projects" class="projects-section">
-      <h2 class="section-title">Featured Projects</h2>
-      <div class="cards-grid">
+    <section id="projects" class="projects-section" aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="section-title">Featured Projects</h2>
+      <div class="cards-grid" role="list">
 
         <!-- Solar System Card -->
-        <a href="portfolio/solarsystem.html" class="card">
+        <a href="portfolio/solarsystem.html" class="card" role="listitem" aria-label="Solar System – 3D Rendering project">
           <div class="card-header">
-            <img src="images/sun.png" alt="Solar System Icon" class="card-icon" />
+            <img src="images/sun.png" alt="Solar System project icon" class="card-icon" width="48" height="48" />
             <div>
               <div class="card-title">SOLAR SYSTEM</div>
               <div class="card-subtitle">3D Rendering</div>
             </div>
           </div>
           <p class="card-desc">3D rendering is described as the process of creating a photorealistic 2D image from 3D models. It's the final step in 3D visualization, which involves creating models of objects, applying texture, and adding light to the scene.</p>
-          <div class="tags">
+          <div class="tags" aria-label="Technologies used">
             <span class="tag">Blender</span>
             <span class="tag">Python</span>
-            <span class="tag">3d Rendering</span>
+            <span class="tag">3D Rendering</span>
           </div>
         </a>
 
         <!-- Rotoscope Card -->
-        <a href="portfolio/rotoscope.html" class="card">
+        <a href="portfolio/rotoscope.html" class="card" role="listitem" aria-label="Rotoscope – Animation Technique project">
           <div class="card-header">
-            <img src="images/sun.png" alt="Rotoscope Icon" class="card-icon" />
+            <img src="images/sun.png" alt="Rotoscope project icon" class="card-icon" width="48" height="48" />
             <div>
               <div class="card-title">ROTOSCOPE</div>
               <div class="card-subtitle">Animation Technique</div>
             </div>
           </div>
           <p class="card-desc">Rotoscoping is a method of creating motion sequences by outlining live-action footage frame by frame. This type of animation moves in a manner similar to people in the real world, allowing animators to create lifelike characters.</p>
-          <div class="tags">
+          <div class="tags" aria-label="Technologies used">
             <span class="tag">Adobe After Effects</span>
             <span class="tag">Digital Art</span>
             <span class="tag">Animation</span>
@@ -73,16 +73,27 @@
 
   </main>
 
-  <footer class="site-footer">©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</footer>
+  <footer class="site-footer" role="contentinfo">
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
 
   <script>
-    const hero = document.querySelector('.hero');
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      const heroHeight = hero.offsetHeight;
-      const fadeProgress = Math.min(scrollY / (heroHeight * 0.5), 1);
-      hero.style.opacity = 1 - fadeProgress * 0.3;
-    });
+    (function () {
+      'use strict';
+
+      var hero = document.querySelector('.hero');
+      if (!hero) return;
+
+      function handleScroll() {
+        var scrollY = window.scrollY || window.pageYOffset;
+        var heroHeight = hero.offsetHeight;
+        if (heroHeight === 0) return;
+        var fadeProgress = Math.min(scrollY / (heroHeight * 0.5), 1);
+        hero.style.opacity = String(1 - fadeProgress * 0.3);
+      }
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    })();
   </script>
 
 </body>

@@ -12,10 +12,9 @@
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
+  <nav role="navigation" aria-label="Main navigation">
     <div class="nav-logo">
-      <img src="../images/sun.png" alt="Sun" class="nav-sun" />
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
       Multimedia Portfolio
     </div>
     <ul class="nav-links">
@@ -25,15 +24,15 @@
     </ul>
   </nav>
 
-  <main>
+  <main id="main-content">
 
     <!-- HERO -->
-    <section class="project-hero">
+    <section class="project-hero" aria-label="Rotoscope project hero">
       <div class="project-hero-text">
         <span class="project-label">2D Animation</span>
         <h1 class="project-title">Rotoscoping</h1>
         <p class="project-desc">A frame-by-frame rotoscoping study tracing live-action footage to produce fluid, hand-drawn animation with natural weight and motion.</p>
-        <div class="project-tags">
+        <div class="project-tags" aria-label="Technologies used">
           <span class="tag">Adobe After Effects</span>
           <span class="tag">Rotoscoping</span>
           <span class="tag">2D Animation</span>
@@ -43,31 +42,33 @@
     </section>
 
     <!-- VIDEO -->
-    <section class="content-section">
-      <h2 class="content-title">Project Video</h2>
+    <section class="content-section" aria-labelledby="video-heading">
+      <h2 id="video-heading" class="content-title">Project Video</h2>
       <div class="video-wrapper">
         <iframe
           src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-          title="Rotoscope Animation"
+          title="Rotoscope animation project video"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
+          allowfullscreen
+          loading="lazy"
+          aria-label="Rotoscope project video embed">
         </iframe>
       </div>
       <p class="video-caption">Replace <code>YOUR_VIDEO_ID</code> with your actual YouTube video ID.</p>
     </section>
 
     <!-- STEP-BY-STEP TUTORIAL -->
-    <section class="content-section">
-      <h2 class="content-title">Step-by-Step Tutorial</h2>
+    <section class="content-section" aria-labelledby="tutorial-heading">
+      <h2 id="tutorial-heading" class="content-title">Step-by-Step Tutorial</h2>
       <p class="section-sub">How the rotoscope animation was created from scratch.</p>
-      <div class="steps-grid">
+      <div class="steps-grid" role="list">
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <a href="https://www.youtube.com/watch?v=w5SRH6Ac1LI" target="_blank" class="yt-thumbnail-link">
-              <img src="https://img.youtube.com/vi/w5SRH6Ac1LI/hqdefault.jpg" alt="Watch on YouTube" />
-              <div class="yt-overlay">
-                <svg class="yt-icon" viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+            <a href="https://www.youtube.com/watch?v=w5SRH6Ac1LI" target="_blank" rel="noopener noreferrer" class="yt-thumbnail-link" aria-label="Watch Step 1 reference video on YouTube (opens in new tab)">
+              <img src="https://img.youtube.com/vi/w5SRH6Ac1LI/hqdefault.jpg" alt="YouTube thumbnail for Step 1 reference footage" width="480" height="360" loading="lazy" />
+              <div class="yt-overlay" aria-hidden="true">
+                <svg class="yt-icon" viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                   <path d="M66.5 7.7A8.5 8.5 0 0 0 60.3 1.5C55 0 34 0 34 0S13 0 7.7 1.5A8.5 8.5 0 0 0 1.5 7.7C0 13 0 24 0 24s0 11 1.5 16.3a8.5 8.5 0 0 0 6.2 6.2C13 48 34 48 34 48s21 0 26.3-1.5a8.5 8.5 0 0 0 6.2-6.2C68 35 68 24 68 24s0-11-1.5-16.3z" fill="red"/>
                   <path d="M27 34l18-10-18-10v20z" fill="white"/>
                 </svg>
@@ -82,9 +83,9 @@
           </div>
         </div>
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <img src="../images/step.jpg" alt="Step 2" />
+            <img src="../images/step.jpg" alt="Screenshot showing the tracing layer setup in Adobe Animate" width="480" height="360" loading="lazy" />
           </div>
           <div class="steps-card-body">
             <span class="steps-label">Step 02</span>
@@ -93,9 +94,9 @@
           </div>
         </div>
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <img src="../images/step.jpg" alt="Step 3" />
+            <img src="../images/step.jpg" alt="Screenshot showing key frame tracing of a subject's silhouette" width="480" height="360" loading="lazy" />
           </div>
           <div class="steps-card-body">
             <span class="steps-label">Step 03</span>
@@ -104,9 +105,9 @@
           </div>
         </div>
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <img src="../images/step.jpg" alt="Step 4" />
+            <img src="../images/step.jpg" alt="Screenshot showing in-between frame interpolation using onion-skin tool" width="480" height="360" loading="lazy" />
           </div>
           <div class="steps-card-body">
             <span class="steps-label">Step 04</span>
@@ -115,9 +116,9 @@
           </div>
         </div>
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <img src="../images/step.jpg" alt="Step 5" />
+            <img src="../images/step.jpg" alt="Screenshot showing flat color fills and varied line weights applied to traced animation" width="480" height="360" loading="lazy" />
           </div>
           <div class="steps-card-body">
             <span class="steps-label">Step 05</span>
@@ -126,9 +127,9 @@
           </div>
         </div>
 
-        <div class="steps-card">
+        <div class="steps-card" role="listitem">
           <div class="steps-card-img">
-            <img src="../images/step.jpg" alt="Step 6" />
+            <img src="../images/step.jpg" alt="Screenshot showing final animation playback and export settings" width="480" height="360" loading="lazy" />
           </div>
           <div class="steps-card-body">
             <span class="steps-label">Step 06</span>
@@ -141,14 +142,14 @@
     </section>
 
     <!-- WEEKLY PROGRESS -->
-    <section class="content-section">
-      <h2 class="content-title">Weekly Progress</h2>
+    <section class="content-section" aria-labelledby="progress-heading">
+      <h2 id="progress-heading" class="content-title">Weekly Progress</h2>
       <p class="section-sub">A breakdown of what was accomplished each week throughout the project.</p>
-      <div class="progress-grid">
+      <div class="progress-grid" role="list">
 
-        <div class="progress-card">
+        <div class="progress-card" role="listitem">
           <div class="progress-card-img">
-            <img src="../images/week1.jpg" alt="Week 1" />
+            <img src="../images/week1.jpg" alt="Week 1 progress screenshot showing research and reference footage selection" width="480" height="360" loading="lazy" />
           </div>
           <div class="progress-card-body">
             <span class="progress-week-label">Week 1</span>
@@ -157,9 +158,9 @@
           </div>
         </div>
 
-        <div class="progress-card">
+        <div class="progress-card" role="listitem">
           <div class="progress-card-img">
-            <img src="../images/week1.jpg" alt="Week 2" />
+            <img src="../images/week1.jpg" alt="Week 2 progress screenshot showing project setup and key frame tracing" width="480" height="360" loading="lazy" />
           </div>
           <div class="progress-card-body">
             <span class="progress-week-label">Week 2</span>
@@ -168,9 +169,9 @@
           </div>
         </div>
 
-        <div class="progress-card">
+        <div class="progress-card" role="listitem">
           <div class="progress-card-img">
-            <img src="../images/week1.jpg" alt="Week 3" />
+            <img src="../images/week1.jpg" alt="Week 3 progress screenshot showing completed in-between frame tracing" width="480" height="360" loading="lazy" />
           </div>
           <div class="progress-card-body">
             <span class="progress-week-label">Week 3</span>
@@ -179,9 +180,9 @@
           </div>
         </div>
 
-        <div class="progress-card">
+        <div class="progress-card" role="listitem">
           <div class="progress-card-img">
-            <img src="../images/week1.jpg" alt="Week 4" />
+            <img src="../images/week1.jpg" alt="Week 4 progress screenshot showing coloring and styling applied to animation" width="480" height="360" loading="lazy" />
           </div>
           <div class="progress-card-body">
             <span class="progress-week-label">Week 4</span>
@@ -190,9 +191,9 @@
           </div>
         </div>
 
-        <div class="progress-card">
+        <div class="progress-card" role="listitem">
           <div class="progress-card-img">
-            <img src="../images/week1.jpg" alt="Week 5" />
+            <img src="../images/week1.jpg" alt="Week 5 progress screenshot showing final review and export at 1080p" width="480" height="360" loading="lazy" />
           </div>
           <div class="progress-card-body">
             <span class="progress-week-label">Week 5</span>
@@ -206,9 +207,8 @@
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="project-footer">
-    <a href="../index.html#projects" class="back-btn">← Back to Projects</a>
+  <footer class="project-footer" role="contentinfo">
+    <a href="../index.html#projects" class="back-btn" aria-label="Back to projects list">← Back to Projects</a>
     <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
   </footer>
 

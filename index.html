@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ronzhem's Multimedia Portfolio</title>
   <link rel="stylesheet" href="style.css" />
-  
 </head>
 <body>
+
   <nav>
     <div class="nav-logo">
       <img src="images/sun.png" alt="Sun" class="nav-sun" />
@@ -20,65 +20,68 @@
     </ul>
   </nav>
 
-  <!-- HERO -->
-  <main class="hero">
-    <h1 class="hero-title">Multimedia Portfolio</h1>
-    <p class="hero-sub">this portfolio shows my creative work in retroscoping<br>and 3d rendering.</p>
-    <a href="#projects" class="scroll-btn">View Projects ↓</a>
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <h1 class="hero-title">Multimedia Portfolio</h1>
+      <p class="hero-sub">this portfolio shows my creative work in retroscoping<br>and 3d rendering.</p>
+      <a href="#projects" class="scroll-btn">View Projects ↓</a>
+    </section>
+
+    <!-- FEATURED PROJECTS -->
+    <section id="projects" class="projects-section">
+      <h2 class="section-title">Featured Projects</h2>
+      <div class="cards-grid">
+
+        <!-- Solar System Card -->
+        <a href="portfolio/solarsystem.html" class="card">
+          <div class="card-header">
+            <img src="images/sun.png" alt="Solar System Icon" class="card-icon" />
+            <div>
+              <div class="card-title">SOLAR SYSTEM</div>
+              <div class="card-subtitle">3D Rendering</div>
+            </div>
+          </div>
+          <p class="card-desc">3D rendering is described as the process of creating a photorealistic 2D image from 3D models. It's the final step in 3D visualization, which involves creating models of objects, applying texture, and adding light to the scene.</p>
+          <div class="tags">
+            <span class="tag">Blender</span>
+            <span class="tag">Python</span>
+            <span class="tag">3d Rendering</span>
+          </div>
+        </a>
+
+        <!-- Rotoscope Card -->
+        <a href="portfolio/rotoscope.html" class="card">
+          <div class="card-header">
+            <img src="images/sun.png" alt="Rotoscope Icon" class="card-icon" />
+            <div>
+              <div class="card-title">ROTOSCOPE</div>
+              <div class="card-subtitle">Animation Technique</div>
+            </div>
+          </div>
+          <p class="card-desc">Rotoscoping is a method of creating motion sequences by outlining live-action footage frame by frame. This type of animation moves in a manner similar to people in the real world, allowing animators to create lifelike characters.</p>
+          <div class="tags">
+            <span class="tag">Adobe After Effects</span>
+            <span class="tag">Digital Art</span>
+            <span class="tag">Animation</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
   </main>
 
-  <!-- FEATURED PROJECTS -->
-  <section id="projects" class="projects-section">
-    <h2 class="section-title">Featured Projects</h2>
-    <div class="cards-grid">
-
-      <!-- Solar System Card -->
-      <a href="portfolio/solarsystem.html" class="card">
-        <div class="card-header">
-          <img src="images/sun.png" alt="Solar System Icon" class="card-icon" />
-          <div>
-            <div class="card-title">SOLAR SYSTEM</div>
-            <div class="card-subtitle">3D Rendering</div>
-          </div>
-        </div>
-        <p class="card-desc">3D rendering is described as the process of creating a photorealistic 2D image from 3D models. It's the final step in 3D visualization, which involves creating models of objects, applying texture, and adding light to the scene.</p>
-        <div class="tags">
-          <span class="tag">Blender</span>
-          <span class="tag">Python</span>
-          <span class="tag">3d Rendering</span>
-        </div>
-      </a>
-
-      <!-- Rotoscope Card -->
-      <a href="portfolio/rotoscope.html" class="card">
-        <div class="card-header">
-          <img src="images/sun.png" alt="Rotoscope Icon" class="card-icon" />
-          <div>
-            <div class="card-title">ROTOSCOPE</div>
-            <div class="card-subtitle">Animation Technique</div>
-          </div>
-        </div>
-        <p class="card-desc">Rotoscoping is a method of creating motion sequences by outlining live-action footage frame by frame. This type of animation moves in a manner similar to people in the real world, allowing animators to create lifelike characters.</p>
-        <div class="tags">
-          <span class="tag">Adobe After Effects</span>
-          <span class="tag">Digital Art</span>
-          <span class="tag">Animation</span>
-        </div>
-      </a>
-
-    </div>
-
-    <footer class="site-footer">©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</footer>
-  </section>
+  <footer class="site-footer">©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</footer>
 
   <script>
-    const heroBg = document.querySelector('.hero-bg');
     const hero = document.querySelector('.hero');
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
       const heroHeight = hero.offsetHeight;
       const fadeProgress = Math.min(scrollY / (heroHeight * 0.5), 1);
-      heroBg.style.opacity = 0.12 * (1 - fadeProgress);
+      hero.style.opacity = 1 - fadeProgress * 0.3;
     });
   </script>
 

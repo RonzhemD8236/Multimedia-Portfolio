@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Script – Ronz Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="script-detail.css"/>
+</head>
+<body>
+
+  <nav role="navigation" aria-label="Main navigation">
+    <div class="nav-logo">
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      Multimedia Portfolio
+    </div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main id="main-content">
+    <div class="page-inner">
+
+      <section class="script-hero" aria-label="Script detail hero">
+        <div class="script-hero-inner">
+          <a href="../portfolio/solarsystem.html" class="back-link" aria-label="Back to Solar System page">← Back to Solar System</a>
+          <span class="project-label">Python / Blender Script</span>
+          <h1 class="script-title">Mercury – Blender Script</h1>
+          <p class="script-subtitle">The Python script used inside Blender to animate and configure Mercury's orbital motion and rotation.</p>
+        </div>
+      </section>
+
+      <section class="script-section" aria-labelledby="script-heading">
+        <div class="script-section-inner">
+
+          <div class="script-meta">
+            <div class="script-meta-item">
+              <span class="script-meta-label">Language</span>
+              <span class="script-meta-value">Python 3</span>
+            </div>
+            <div class="script-meta-item">
+              <span class="script-meta-label">Environment</span>
+              <span class="script-meta-value">Blender 4.4</span>
+            </div>
+            <div class="script-meta-item">
+              <span class="script-meta-label">Purpose</span>
+              <span class="script-meta-value">Orbital Animation</span>
+            </div>
+          </div>
+
+          <div class="script-block">
+            <div class="script-block-header">
+              <div class="script-block-header-left">
+                <span class="script-lang-dot" aria-hidden="true"></span>
+                <span class="script-filename">mercury.py</span>
+              </div>
+              <div class="script-block-header-right">
+                <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy script to clipboard">Copy</button>
+                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download mercury.py script">Download</a>
+              </div>
+            </div>
+            <pre class="script-code" id="scriptCode"><code># Mercury – Blender Python Script
+# Paste your actual script below
+
+import bpy
+import math
+
+# Example placeholder — replace with your real script
+planet_name = "Mercury"
+orbital_period = 88       # Earth days
+rotation_period = 1407.6  # Hours
+distance_from_sun = 0.39  # AU (scaled)
+
+obj = bpy.data.objects.get(planet_name)
+if obj:
+    # Set orbital keyframes
+    for frame in range(0, 250):
+        angle = (frame / 250) * 2 * math.pi
+        obj.location.x = distance_from_sun * math.cos(angle)
+        obj.location.y = distance_from_sun * math.sin(angle)
+        obj.keyframe_insert(data_path="location", frame=frame)
+    print(f"{planet_name} animation set successfully.")
+else:
+    print(f"Object '{planet_name}' not found in scene.")</code></pre>
+          </div>
+
+          <div class="script-notes" aria-labelledby="notes-heading">
+            <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
+            <ul class="script-notes-list">
+              <li>Replace the placeholder code above with your actual Blender Python script.</li>
+              <li>The orbital period of Mercury is 88 Earth days, the shortest of all planets.</li>
+              <li>Distance is scaled for visualization — not true astronomical units.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="project-footer" role="contentinfo">
+    <a href="../portfolio/solarsystem.html" class="back-btn" aria-label="Back to Solar System page">← Back to Solar System</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var btn = document.getElementById('copyBtn');
+      var code = document.getElementById('scriptCode');
+      var dlBtn = document.getElementById('downloadBtn');
+
+      if (btn && code) {
+        btn.addEventListener('click', function () {
+          navigator.clipboard.writeText(code.innerText).then(function () {
+            btn.textContent = 'Copied!';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          }).catch(function () {
+            btn.textContent = 'Failed';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          });
+        });
+      }
+
+      if (dlBtn && code) {
+        dlBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var blob = new Blob([code.innerText], { type: 'text/plain' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'mercury.py';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

@@ -821,3 +821,23 @@ video.celestial-img:hover {
     font-size: 1.6rem;
   }
 }
+
+.celestial-details-links {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.celestial-details-link {
+  color: var(--accent, #f4a261);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s;
+}
+
+.celestial-details-link:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}

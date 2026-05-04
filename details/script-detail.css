@@ -1,0 +1,249 @@
+/* script-detail.css */
+
+/* ── Hero ── */
+.script-hero {
+  padding: 6rem 2rem 2rem;  /* more top padding to push it down */
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.script-hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent, #f4a261);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+  opacity: 0.85;
+  transition: opacity 0.2s, gap 0.2s;
+}
+
+.back-link:hover {
+  opacity: 1;
+  gap: 0.55rem;
+}
+
+.project-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent, #f4a261);
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+.script-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.script-subtitle {
+  font-size: 1rem;
+  opacity: 0.6;
+  max-width: 580px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Divider ── */
+.script-divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 0;
+}
+
+/* ── Section ── */
+.script-section {
+  padding: 2rem 2rem 5rem;
+}
+
+.script-section-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* ── Meta badges ── */
+.script-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.script-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  min-width: 120px;
+}
+
+.script-meta-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.45;
+  font-weight: 600;
+}
+
+.script-meta-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--accent, #f4a261);
+}
+
+/* ── Code block ── */
+.script-block {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+.script-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.script-block-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.script-lang-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3572A5; /* Python blue */
+  display: inline-block;
+}
+
+.script-filename {
+  font-size: 0.85rem;
+  opacity: 0.55;
+  font-family: 'Courier New', monospace;
+}
+
+.copy-btn {
+  background: var(--accent, #f4a261);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.copy-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
+}
+
+.script-code {
+  margin: 0;
+  padding: 1.75rem 1.5rem;
+  overflow-x: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  background: rgba(0,0,0,0.35);
+  color: #e2e8f0;
+  tab-size: 4;
+}
+
+.script-code code {
+  display: block;
+}
+
+/* ── Notes ── */
+.script-notes {
+  background: rgba(244, 162, 97, 0.06);
+  border: 1px solid rgba(244, 162, 97, 0.2);
+  border-left: 3px solid var(--accent, #f4a261);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+}
+
+.script-notes-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent, #f4a261);
+  opacity: 0.9;
+}
+
+.script-notes-list {
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  opacity: 0.75;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.page-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.script-block-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.download-btn {
+  background: transparent;
+  color: var(--accent, #f4a261);
+  border: 1px solid var(--accent, #f4a261);
+  border-radius: 6px;
+  padding: 0.35rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.download-btn:hover {
+  background: var(--accent, #f4a261);
+  color: #000;
+  transform: translateY(-1px);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+}

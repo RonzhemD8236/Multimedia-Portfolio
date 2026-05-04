@@ -30,7 +30,6 @@ body {
 .tag {
   background: var(--gold);
   color: #000;
-  -webkit-text-fill-color: #000;
   border: 1px solid var(--gold);
   padding: 5px 14px;
   border-radius: 999px;
@@ -75,8 +74,8 @@ body {
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   line-height: 1.05;
   margin-bottom: 18px;
 }
@@ -114,8 +113,8 @@ body {
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   margin-bottom: 40px;
   width: 100%;
   text-align: center;
@@ -382,7 +381,6 @@ body {
 
 @media (max-width: 768px) {
 
-  /* Nav */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -396,11 +394,9 @@ body {
     gap: 12px;
   }
 
-  /* Sections */
   .project-hero { padding: 110px 6% 56px; }
   .content-section { padding: 60px 6%; }
 
-  /* Steps — horizontal card layout */
   .steps-grid {
     grid-template-columns: 1fr;
   }
@@ -426,7 +422,6 @@ body {
     padding: 14px 16px;
   }
 
-  /* Progress — horizontal card layout */
   .progress-grid {
     grid-template-columns: 1fr;
   }
@@ -448,7 +443,6 @@ body {
     padding: 14px 16px;
   }
 
-  /* Footer */
   .project-footer {
     flex-direction: column;
     gap: 16px;

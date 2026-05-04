@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solar System – Ronz Portfolio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="../style.css"/>
-  <link rel="stylesheet" href="solarsystem.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="solarsystem.css">
 </head>
 <body>
 
-  <nav role="navigation" aria-label="Main navigation">
+  <nav aria-label="Main navigation">
     <div class="nav-logo">
-      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32">
       Multimedia Portfolio
     </div>
     <ul class="nav-links">
@@ -32,10 +32,10 @@
         <span class="project-label">3D Rendering</span>
         <h1 class="project-title">Solar System</h1>
         <p class="project-desc">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim.</p>
-        <div class="project-tags" aria-label="Technologies used">
-          <span class="tag">Blender</span>
-          <span class="tag">Python</span>
-          <span class="tag">3D Rendering</span>
+        <div class="project-tags" role="list" aria-label="Technologies used">
+          <span class="tag" role="listitem">Blender</span>
+          <span class="tag" role="listitem">Python</span>
+          <span class="tag" role="listitem">3D Rendering</span>
         </div>
       </div>
     </section>
@@ -65,22 +65,22 @@
         </div>
         <div class="overview-stats" role="list" aria-label="Project statistics">
           <div class="stat-item" role="listitem">
-            <span class="highlight-number" aria-label="9 planets modeled">9</span>
+            <span class="highlight-number">9</span>
             <span class="highlight-label">Planets Modeled</span>
           </div>
           <div class="stat-divider" role="separator" aria-hidden="true"></div>
           <div class="stat-item" role="listitem">
-            <span class="highlight-number" aria-label="30 seconds animation length">30s</span>
+            <span class="highlight-number">30s</span>
             <span class="highlight-label">Animation Length</span>
           </div>
           <div class="stat-divider" role="separator" aria-hidden="true"></div>
           <div class="stat-item" role="listitem">
-            <span class="highlight-number" aria-label="1080p render quality">1080p</span>
+            <span class="highlight-number">1080p</span>
             <span class="highlight-label">Render Quality</span>
           </div>
           <div class="stat-divider" role="separator" aria-hidden="true"></div>
           <div class="stat-item" role="listitem">
-            <span class="highlight-number" aria-label="3 tools used">3</span>
+            <span class="highlight-number">3</span>
             <span class="highlight-label">Tools Used</span>
           </div>
         </div>
@@ -191,7 +191,7 @@
             aria-required="false"
             aria-describedby="calc-error"
             autocomplete="off"
-          />
+          >
           <button class="calc-btn" id="calcBtn" type="button" aria-controls="celestialGrid">Calculate</button>
         </div>
         <p id="calc-error" class="calc-error" role="alert" aria-live="polite" aria-atomic="true"></p>
@@ -207,7 +207,7 @@
 
   </main>
 
-  <footer class="project-footer" role="contentinfo">
+  <footer class="project-footer">
     <a href="../index.html#projects" class="back-btn" aria-label="Back to projects list">← Back to Projects</a>
     <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
   </footer>
@@ -334,7 +334,7 @@
           var isVideo = /\.(mp4|webm)$/i.test(p.image);
           var mediaTag = isVideo ?
             '<video class="celestial-img" src="' + escapeHTML(p.image) + '" autoplay loop muted playsinline style="pointer-events:none;" aria-label="' + escapeHTML(p.name) + ' animation" onerror="this.style.display=\'none\'"></video>' :
-            '<img src="' + escapeHTML(p.image) + '" alt="' + escapeHTML(p.name) + '" class="celestial-img" style="pointer-events:none;" onerror="this.style.display=\'none\'" />';
+            '<img src="' + escapeHTML(p.image) + '" alt="' + escapeHTML(p.name) + '" class="celestial-img" style="pointer-events:none;" onerror="this.style.display=\'none\'">';
 
           var statsExtra = !p.isSun ?
             '<div class="celestial-stat-row"><span class="celestial-stat-label">Revolutions:</span><span class="celestial-stat-value">' + revStr + '</span></div>' +
@@ -342,32 +342,30 @@
             '<div class="celestial-stat-row"><span class="celestial-stat-label">Distance from Sun:</span><span class="celestial-stat-value">' + escapeHTML(p.distance) + '</span></div>' :
             '';
 
-          // ── ONLY ADDITION: "View Scripts & Textures" link ──
-        var detailsLinks =
-          '<div class="celestial-details-links">' +
-            '<a href="' + escapeHTML(p.scriptUrl) + '" class="celestial-details-link" aria-label="View script for ' + escapeHTML(p.name) + '">View Script →</a>' +
-            '<a href="' + escapeHTML(p.textureUrl) + '" class="celestial-details-link" aria-label="View texture for ' + escapeHTML(p.name) + '">View Texture →</a>' +
-          '</div>';
+          var detailsLinks =
+            '<div class="celestial-details-links">' +
+              '<a href="' + escapeHTML(p.scriptUrl) + '" class="celestial-details-link" aria-label="View script for ' + escapeHTML(p.name) + '">View Script →</a>' +
+              '<a href="' + escapeHTML(p.textureUrl) + '" class="celestial-details-link" aria-label="View texture for ' + escapeHTML(p.name) + '">View Texture →</a>' +
+            '</div>';
 
-        return '<div class="celestial-card" role="listitem">' +
-          '<div class="celestial-info">' +
-          '<h3 class="celestial-name">' + escapeHTML(p.name) + '</h3>' +
-          '<p class="celestial-desc">' + escapeHTML(p.description) + '</p>' +
-          '<div class="celestial-stats">' +
-          '<div class="celestial-stat-row"><span class="celestial-stat-label">Age on this planet:</span><span class="celestial-stat-value age-value">' + ageStr + '</span></div>' +
-          statsExtra +
-          '</div>' +
-          '<div class="celestial-facts">' +
-          '<span class="celestial-facts-title">Fun Facts</span>' +
-          '<ul class="celestial-facts-list">' + factsHTML + '</ul>' +
-          '</div>' +
-          detailsLinks +        // ← swapped from detailsLink
-          '</div>' +
-          '<div class="celestial-img-wrap">' + mediaTag + '</div>' +
-          '</div>';
-          }).join('');   // ← closes .map().join('')
-      }               // ← closes buildCelestialCards
-
+          return '<div class="celestial-card" role="listitem">' +
+            '<div class="celestial-info">' +
+            '<h3 class="celestial-name">' + escapeHTML(p.name) + '</h3>' +
+            '<p class="celestial-desc">' + escapeHTML(p.description) + '</p>' +
+            '<div class="celestial-stats">' +
+            '<div class="celestial-stat-row"><span class="celestial-stat-label">Age on this planet:</span><span class="celestial-stat-value age-value">' + ageStr + '</span></div>' +
+            statsExtra +
+            '</div>' +
+            '<div class="celestial-facts">' +
+            '<span class="celestial-facts-title">Fun Facts</span>' +
+            '<ul class="celestial-facts-list">' + factsHTML + '</ul>' +
+            '</div>' +
+            detailsLinks +
+            '</div>' +
+            '<div class="celestial-img-wrap">' + mediaTag + '</div>' +
+            '</div>';
+        }).join('');
+      }
 
       function showError(msg) {
         var el = document.getElementById('calc-error');

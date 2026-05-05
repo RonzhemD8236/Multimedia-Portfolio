@@ -17,7 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--accent, #f4a261);
+  color: var(--accent, #f5b800);
   text-decoration: none;
   font-size: 0.85rem;
   font-weight: 600;
@@ -35,7 +35,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent, #f4a261);
+  color: var(--accent, #f5b800);
   opacity: 0.75;
   font-weight: 600;
 }
@@ -104,15 +104,22 @@
 .script-meta-value {
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--accent, #f4a261);
+  color: var(--accent, #f5b800);
 }
 
 /* ── Code block ── */
 .script-block {
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(245, 184, 0, 0.35);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.script-block:hover {
+  border-color: rgba(245, 184, 0, 0.75);
+  box-shadow: 0 0 24px rgba(245, 184, 0, 0.12), 0 4px 24px rgba(0,0,0,0.3);
+  background: rgba(245, 184, 0, 0.06);
 }
 
 .script-block-header {
@@ -122,6 +129,7 @@
   padding: 0.75rem 1.25rem;
   background: rgba(255,255,255,0.06);
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.3s ease;
 }
 
 .script-block-header-left {
@@ -134,7 +142,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #3572A5; /* Python blue */
+  background: #f5b800; /* Yellow dot replacing Python blue */
   display: inline-block;
 }
 
@@ -145,9 +153,9 @@
 }
 
 .copy-btn {
-  background: var(--accent, #f4a261);
+  background: var(--accent, #f5b800);
   color: #000;
-  border: none;
+  border: 1px solid transparent; /* ← add this */
   border-radius: 6px;
   padding: 0.35rem 1rem;
   font-size: 0.78rem;
@@ -176,6 +184,15 @@
   background: rgba(0,0,0,0.35);
   color: #e2e8f0;
   tab-size: 4;
+  transition: background 0.3s ease;
+}
+
+.script-block:hover .script-code {
+  background: rgba(245, 184, 0, 0.05);
+}
+
+.script-block:hover .script-block-header {
+  background: rgba(245, 184, 0, 0.08);
 }
 
 .script-code code {
@@ -184,9 +201,9 @@
 
 /* ── Notes ── */
 .script-notes {
-  background: rgba(244, 162, 97, 0.06);
-  border: 1px solid rgba(244, 162, 97, 0.2);
-  border-left: 3px solid var(--accent, #f4a261);
+  background: rgba(245, 184, 0, 0.06);
+  border: 1px solid rgba(245, 184, 0, 0.2);
+  border-left: 3px solid var(--accent, #f5b800);
   border-radius: 10px;
   padding: 1.5rem 1.75rem;
 }
@@ -197,7 +214,7 @@
   margin: 0 0 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent, #f4a261);
+  color: var(--accent, #f5b800);
   opacity: 0.9;
 }
 
@@ -226,10 +243,10 @@
 
 .download-btn {
   background: transparent;
-  color: var(--accent, #f4a261);
-  border: 1px solid var(--accent, #f4a261);
+  color: var(--accent, #f5b800);
+  border: 1px solid var(--accent, #f5b800);
   border-radius: 6px;
-  padding: 0.35rem 1rem;
+  padding: 0.28rem 1rem; /* slightly reduced to compensate for the border */
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
@@ -239,11 +256,65 @@
 }
 
 .download-btn:hover {
-  background: var(--accent, #f4a261);
+  background: var(--accent, #f5b800);
   color: #000;
   transform: translateY(-1px);
 }
 
 .download-btn:active {
   transform: translateY(0);
+}
+
+.project-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 2.5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.project-footer p {
+  font-size: 0.85rem;
+  opacity: 0.45;
+  margin: 0;
+}
+
+.back-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1.5px solid #f5b800;
+  border-radius: 999px;
+  color: #f5b800;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: background 0.25s, color 0.25s, transform 0.2s;
+}
+
+.back-btn:hover {
+  background: #f5b800;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+.project-footer {
+  padding: 48px 10%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 300;
+  max-width: unset;
+  margin: 0;
+}
+
+.project-footer p {
+  font-size: 0.9rem;
+  opacity: 1;
+  margin: 0;
 }

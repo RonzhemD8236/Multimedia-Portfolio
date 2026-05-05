@@ -29,7 +29,6 @@
 
       <section class="script-hero" aria-label="Script detail hero">
         <div class="script-hero-inner">
-          <a href="../portfolio/solarsystem.html" class="back-link" aria-label="Back to Solar System page">← Back to Solar System</a>
           <span class="project-label">Python / Blender Script</span>
           <h1 class="script-title">Mercury – Blender Script</h1>
           <p class="script-subtitle">The Python script used inside Blender to animate and configure Mercury's orbital motion and rotation.</p>
@@ -38,21 +37,6 @@
 
       <section class="script-section" aria-labelledby="script-heading">
         <div class="script-section-inner">
-
-          <div class="script-meta">
-            <div class="script-meta-item">
-              <span class="script-meta-label">Language</span>
-              <span class="script-meta-value">Python 3</span>
-            </div>
-            <div class="script-meta-item">
-              <span class="script-meta-label">Environment</span>
-              <span class="script-meta-value">Blender 4.4</span>
-            </div>
-            <div class="script-meta-item">
-              <span class="script-meta-label">Purpose</span>
-              <span class="script-meta-value">Orbital Animation</span>
-            </div>
-          </div>
 
           <div class="script-block">
             <div class="script-block-header">
@@ -66,38 +50,27 @@
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
-
-              import bpy
+import bpy
 import os
 import math
 
-# ─────────────────────────────────────────
-#  CONFIGURATION – edit these paths
-# ─────────────────────────────────────────
 TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_mercury.jpg"
 OUTPUT_PATH = "C:/Users/Ronzhem Dioso/Downloads/mercury_frames/frame_"
 
-# AXIAL TILT CONFIGURATION
-AXIAL_TILT_DEGREES = 2.11  # Mercury's real axial tilt is ~0.034°, but 2.11° looks better visually
-# Adjust this value:
-#   - 0.0 = no tilt (boring)
-#   - 2.11 = more pronounced tilt (recommended for visuals)
-#   - 5.0+ = extreme tilt (very dramatic)
+AXIAL_TILT_DEGREES = 2.11
 
-# ─────────────────────────────────────────
-#  CLEAN SCENE
-# ─────────────────────────────────────────
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
 
-for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
-for block in bpy.data.materials: bpy.data.materials.remove(block)
-for block in bpy.data.images:    bpy.data.images.remove(block)
-for block in bpy.data.lights:    bpy.data.lights.remove(block)
+for block in bpy.data.meshes:
+    bpy.data.meshes.remove(block)
+for block in bpy.data.materials:
+    bpy.data.materials.remove(block)
+for block in bpy.data.images:
+    bpy.data.images.remove(block)
+for block in bpy.data.lights:
+    bpy.data.lights.remove(block)
 
-# ─────────────────────────────────────────
-#  MERCURY SPHERE
-# ─────────────────────────────────────────
 bpy.ops.mesh.primitive_uv_sphere_add(
     segments=128,
     ring_count=64,
@@ -107,37 +80,29 @@ bpy.ops.mesh.primitive_uv_sphere_add(
 mercury = bpy.context.active_object
 mercury.name = "Mercury"
 
-# Smooth shading
 bpy.ops.object.shade_smooth()
 
-# Auto smooth normals
 bpy.ops.object.modifier_add(type='SMOOTH')
 mercury.modifiers["Smooth"].factor = 0.5
 mercury.modifiers["Smooth"].iterations = 2
 
-# ─────────────────────────────��───────────
-#  MATERIAL WITH CYCLES NODE SETUP
-# ─────────────────────────────────────────
 mat = bpy.data.materials.new(name="Mercury_Material")
 mat.use_nodes = True
 nodes = mat.node_tree.nodes
 links = mat.node_tree.links
 nodes.clear()
 
-# Output
 output = nodes.new("ShaderNodeOutputMaterial")
 output.location = (900, 0)
 
-# Principled BSDF
 bsdf = nodes.new("ShaderNodeBsdfPrincipled")
 bsdf.location = (550, 0)
-bsdf.inputs["Base Color"].default_value      = (0.42, 0.40, 0.38, 1.0)
-bsdf.inputs["Roughness"].default_value       = 0.88
-bsdf.inputs["Metallic"].default_value        = 0.0
+bsdf.inputs["Base Color"].default_value = (0.42, 0.40, 0.38, 1.0)
+bsdf.inputs["Roughness"].default_value = 0.88
+bsdf.inputs["Metallic"].default_value = 0.0
 bsdf.inputs["Specular IOR Level"].default_value = 0.04
 links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
 
-# Texture Coordinate + Mapping
 tex_coord = nodes.new("ShaderNodeTexCoord")
 tex_coord.location = (-700, 0)
 
@@ -146,7 +111,6 @@ mapping.location = (-500, 0)
 mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
 links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
 
-# Color Texture
 img_node = nodes.new("ShaderNodeTexImage")
 img_node.location = (-250, 150)
 img_node.label = "Mercury Color Map"
@@ -162,22 +126,21 @@ else:
 links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
 links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
 
-# Procedural Roughness / Bump
 noise1 = nodes.new("ShaderNodeTexNoise")
 noise1.location = (-250, -150)
 noise1.label = "Large Scale Noise"
-noise1.inputs["Scale"].default_value      = 4.0
-noise1.inputs["Detail"].default_value     = 10.0
-noise1.inputs["Roughness"].default_value  = 0.8
+noise1.inputs["Scale"].default_value = 4.0
+noise1.inputs["Detail"].default_value = 10.0
+noise1.inputs["Roughness"].default_value = 0.8
 noise1.inputs["Distortion"].default_value = 0.3
 links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
 
 noise2 = nodes.new("ShaderNodeTexNoise")
 noise2.location = (-250, -350)
 noise2.label = "Fine Detail Noise"
-noise2.inputs["Scale"].default_value      = 20.0
-noise2.inputs["Detail"].default_value     = 15.0
-noise2.inputs["Roughness"].default_value  = 0.9
+noise2.inputs["Scale"].default_value = 20.0
+noise2.inputs["Detail"].default_value = 15.0
+noise2.inputs["Roughness"].default_value = 0.9
 noise2.inputs["Distortion"].default_value = 0.1
 links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
 
@@ -192,57 +155,51 @@ ramp_rough = nodes.new("ShaderNodeValToRGB")
 ramp_rough.location = (250, -200)
 ramp_rough.label = "Roughness Ramp"
 ramp_rough.color_ramp.elements[0].position = 0.2
-ramp_rough.color_ramp.elements[0].color    = (0.75, 0.75, 0.75, 1)
+ramp_rough.color_ramp.elements[0].color = (0.75, 0.75, 0.75, 1)
 ramp_rough.color_ramp.elements[1].position = 0.8
-ramp_rough.color_ramp.elements[1].color    = (0.95, 0.95, 0.95, 1)
+ramp_rough.color_ramp.elements[1].color = (0.95, 0.95, 0.95, 1)
 links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
 links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
 
 bump = nodes.new("ShaderNodeBump")
 bump.location = (250, -400)
-bump.inputs["Strength"].default_value  = 0.6
-bump.inputs["Distance"].default_value  = 0.05
+bump.inputs["Strength"].default_value = 0.6
+bump.inputs["Distance"].default_value = 0.05
 links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
 links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 mercury.data.materials.append(mat)
 
-# ─────────────────────────────────────────
-#  LIGHTING
-# ─────────────────────────────────────────
 bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
 sun = bpy.context.active_object
 sun.name = "Sun_Key"
-sun.data.energy    = 8.0          # ← brighter sun
-sun.data.angle     = 0.53         # ← wider angle = softer shadows (real sun angle)
-sun.data.color     = (1.0, 0.95, 0.85)
+sun.data.energy = 8.0
+sun.data.angle = 0.53
+sun.data.color = (1.0, 0.95, 0.85)
 sun.rotation_euler = (1.5708, 0.0, -1.5708)
 
 bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
 fill = bpy.context.active_object
 fill.name = "Space_Fill"
-fill.data.energy = 8.0            # ← much brighter fill for night side
-fill.data.color  = (0.5, 0.55, 0.7)
+fill.data.energy = 8.0
+fill.data.color = (0.5, 0.55, 0.7)
 fill.data.shadow_soft_size = 10.0
 
 bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
 fill2 = bpy.context.active_object
 fill2.name = "Space_Fill2"
 fill2.data.energy = 6.0
-fill2.data.color  = (0.5, 0.55, 0.7)
+fill2.data.color = (0.5, 0.55, 0.7)
 fill2.data.shadow_soft_size = 10.0
 
 bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
 rim = bpy.context.active_object
 rim.name = "Rim_Light"
 rim.data.energy = 5.0
-rim.data.size   = 8.0
-rim.data.color  = (0.7, 0.75, 1.0)
+rim.data.size = 8.0
+rim.data.color = (0.7, 0.75, 1.0)
 rim.rotation_euler = (1.57, 0, 1.57)
 
-# ─────────────────────────────────────────
-#  WORLD / BACKGROUND
-# ─────────────────────────────────────────
 HDR_PATH = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
 
 world = bpy.data.worlds["World"]
@@ -254,13 +211,11 @@ world_nodes.clear()
 output_world = world_nodes.new("ShaderNodeOutputWorld")
 output_world.location = (900, 0)
 
-# Ambient background (lights the scene)
 bg_ambient = world_nodes.new("ShaderNodeBackground")
 bg_ambient.location = (300, 100)
-bg_ambient.inputs["Color"].default_value    = (0.15, 0.15, 0.15, 1.0)
+bg_ambient.inputs["Color"].default_value = (0.15, 0.15, 0.15, 1.0)
 bg_ambient.inputs["Strength"].default_value = 0.8
 
-# Image background (camera only, no lighting)
 img_tex = world_nodes.new("ShaderNodeTexImage")
 img_tex.location = (-200, -150)
 img_tex.extension = 'EXTEND'
@@ -274,7 +229,6 @@ if os.path.exists(abs_hdr_path):
 else:
     print(f"[World] WARNING – image not found at: {abs_hdr_path}")
 
-# Texture coordinate using Generated for flat background projection
 tex_coord = world_nodes.new("ShaderNodeTexCoord")
 tex_coord.location = (-600, -150)
 
@@ -291,7 +245,6 @@ bg_image.inputs["Strength"].default_value = 1.0
 
 world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
 
-# Light Path: camera sees image, rest sees ambient
 light_path = world_nodes.new("ShaderNodeLightPath")
 light_path.location = (300, 300)
 
@@ -299,13 +252,10 @@ mix_shader = world_nodes.new("ShaderNodeMixShader")
 mix_shader.location = (650, 0)
 
 world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
-world_links.new(bg_ambient.outputs["Background"],    mix_shader.inputs[1])
-world_links.new(bg_image.outputs["Background"],      mix_shader.inputs[2])
-world_links.new(mix_shader.outputs["Shader"],        output_world.inputs["Surface"])
+world_links.new(bg_ambient.outputs["Background"], mix_shader.inputs[1])
+world_links.new(bg_image.outputs["Background"], mix_shader.inputs[2])
+world_links.new(mix_shader.outputs["Shader"], output_world.inputs["Surface"])
 
-# ─────────────────────────────────────────
-#  CAMERA
-# ─────────────────────────────────────────
 bpy.ops.object.camera_add(location=(0, -12, 0))
 cam = bpy.context.active_object
 cam.name = "Camera"
@@ -314,33 +264,25 @@ cam.data.lens = 50
 
 bpy.context.scene.camera = cam
 
-# ─────────────────────────────────────────
-#  RENDER SETTINGS
-# ─────────────────────────────────────────
 scene = bpy.context.scene
-scene.render.engine          = 'CYCLES'
-scene.cycles.device          = 'GPU'
-scene.cycles.samples         = 128
-scene.cycles.use_denoising   = True
-scene.cycles.denoiser        = 'OPENIMAGEDENOISE'
+scene.render.engine = 'CYCLES'
+scene.cycles.device = 'GPU'
+scene.cycles.samples = 128
+scene.cycles.use_denoising = True
+scene.cycles.denoiser = 'OPENIMAGEDENOISE'
 
-scene.render.resolution_x    = 1920
-scene.render.resolution_y    = 1080
+scene.render.resolution_x = 1920
+scene.render.resolution_y = 1080
 scene.render.resolution_percentage = 100
 
 scene.view_settings.view_transform = 'Filmic'
-scene.view_settings.look            = 'High Contrast'
-scene.view_settings.exposure        = 0.0
-scene.view_settings.gamma           = 1.0
+scene.view_settings.look = 'High Contrast'
+scene.view_settings.exposure = 0.0
+scene.view_settings.gamma = 1.0
 
 scene.render.image_settings.file_format = 'PNG'
 scene.render.filepath = OUTPUT_PATH
 
-# ─────────────────────────────────────────
-#  MERCURY ROTATION ANIMATION - WITH AXIAL TILT
-# ─────────────────────────────────────────
-
-# Animation settings
 TOTAL_FRAMES = 240
 FPS = 24
 
@@ -348,14 +290,11 @@ scene.frame_start = 1
 scene.frame_end = TOTAL_FRAMES
 scene.render.fps = FPS
 
-# Make Mercury active and selected
 bpy.context.view_layer.objects.active = mercury
 mercury.select_set(True)
 
-# Rotation speed multiplier
 rotation_multiplier = 1.0
 
-# Convert axial tilt to radians
 axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
 
 print("\n" + "=" * 60)
@@ -368,26 +307,18 @@ print(f"Rotation multiplier: {rotation_multiplier}x")
 print(f"Axial tilt: {AXIAL_TILT_DEGREES}°")
 print("=" * 60 + "\n")
 
-# Insert keyframes for rotation with axial tilt
 for frame_num in range(scene.frame_start, scene.frame_end + 1):
     scene.frame_set(frame_num)
-    
-    # Calculate Z-axis rotation (spinning motion)
-    progress = (frame_num - 1) / (TOTAL_FRAMES - 1)  # 0.0 to 1.0
+
+    progress = (frame_num - 1) / (TOTAL_FRAMES - 1)
     total_rotation_degrees = progress * 360.0 * rotation_multiplier
     total_rotation_radians = math.radians(total_rotation_degrees)
-    
-    # Apply rotation: X-axis tilt + Z-axis spin
-    # X-axis: fixed axial tilt
-    # Y-axis: 0 (no inclination on Y)
-    # Z-axis: rotating for spin effect
-    mercury.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
-    
-    # Insert keyframe for all rotation axes
-    mercury.keyframe_insert(data_path="rotation_euler", index=0)  # X-axis (only keyframe once)
-    mercury.keyframe_insert(data_path="rotation_euler", index=2)  # Z-axis
 
-# Reset to frame 1
+    mercury.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
+
+    mercury.keyframe_insert(data_path="rotation_euler", index=0)
+    mercury.keyframe_insert(data_path="rotation_euler", index=2)
+
 scene.frame_set(1)
 
 print("✓ Keyframes inserted successfully!")
@@ -425,10 +356,10 @@ print("=" * 60 + "\n")
     </div>
   </main>
 
-  <footer class="project-footer" role="contentinfo">
-    <a href="../portfolio/solarsystem.html" class="back-btn" aria-label="Back to Solar System page">← Back to Solar System</a>
-    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
-  </footer>
+<footer class="project-footer" role="contentinfo">
+  <a href="../index.html#projects" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+</footer>
 
   <script>
     (function () {

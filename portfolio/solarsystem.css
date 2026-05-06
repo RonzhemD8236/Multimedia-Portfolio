@@ -827,9 +827,8 @@ video.celestial-img:hover {
   gap: 0.5rem;
   margin-top: 1rem;
 }
-
 .celestial-details-link {
-  color: var(--accent, #f4a261);
+  color: #f5b800;
   font-weight: 600;
   text-decoration: none;
   font-size: 0.9rem;

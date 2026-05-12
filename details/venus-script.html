@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Script – Ronz Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="script-detail.css"/>
+</head>
+<body>
+
+  <nav role="navigation" aria-label="Main navigation">
+    <div class="nav-logo">
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      Multimedia Portfolio
+    </div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main id="main-content">
+    <div class="page-inner">
+
+      <section class="script-hero" aria-label="Script detail hero">
+        <div class="script-hero-inner">
+          <span class="project-label">Python / Blender Script</span>
+          <h1 class="script-title">Venus – Blender Script</h1>
+          <p class="script-subtitle">The Python script used inside Blender to animate and configure Venus's orbital motion and rotation.</p>
+        </div>
+      </section>
+
+      <section class="script-section" aria-labelledby="script-heading">
+        <div class="script-section-inner">
+
+          <div class="script-block">
+            <div class="script-block-header">
+              <div class="script-block-header-left">
+                <span class="script-lang-dot" aria-hidden="true"></span>
+                <span class="script-filename">venus.py</span>
+              </div>
+              <div class="script-block-header-right">
+                <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy script to clipboard">Copy</button>
+                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download venus.py script">Download</a>
+              </div>
+            </div>
+            <pre class="script-code" id="scriptCode"><code>
+import bpy
+import os
+import math
+
+TEXTURE_PATH = "add texture path here (e.g. C:/Users/YourName/Downloads/8k_venus.jpg)"
+OUTPUT_PATH = "add output path here (e.g. C:/Users/YourName/Downloads/venus_render.mp4)"
+
+AXIAL_TILT_DEGREES = 177.4
+
+TOTAL_FRAMES = 480
+FPS = 24
+
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
+
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=128,
+    ring_count=64,
+    radius=2.0,
+    location=(0, 0, 0)
+)
+venus = bpy.context.active_object
+venus.name = "Venus"
+
+bpy.ops.object.shade_smooth()
+
+bpy.ops.object.modifier_add(type='SMOOTH')
+venus.modifiers["Smooth"].factor = 1.0
+venus.modifiers["Smooth"].iterations = 3
+
+mat = bpy.data.materials.new(name="Venus_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
+
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1100, 0)
+
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (750, 0)
+bsdf.inputs["Base Color"].default_value = (0.88, 0.78, 0.55, 1.0)
+bsdf.inputs["Roughness"].default_value = 0.45
+bsdf.inputs["Metallic"].default_value = 0.0
+bsdf.inputs["Specular IOR Level"].default_value = 0.35
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-800, 0)
+
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-600, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
+
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location = (-300, 200)
+img_node.label = "Venus Color Map"
+
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Venus] Texture loaded: {abs_path}")
+else:
+    print(f"[Venus] WARNING – texture not found at: {abs_path}")
+
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
+
+cloud_noise = nodes.new("ShaderNodeTexNoise")
+cloud_noise.location = (-300, -100)
+cloud_noise.label = "Cloud Band Noise"
+cloud_noise.inputs["Scale"].default_value = 3.0
+cloud_noise.inputs["Detail"].default_value = 12.0
+cloud_noise.inputs["Roughness"].default_value = 0.6
+cloud_noise.inputs["Distortion"].default_value = 0.8
+links.new(mapping.outputs["Vector"], cloud_noise.inputs["Vector"])
+
+wisp_noise = nodes.new("ShaderNodeTexNoise")
+wisp_noise.location = (-300, -320)
+wisp_noise.label = "Cloud Wisp Noise"
+wisp_noise.inputs["Scale"].default_value = 12.0
+wisp_noise.inputs["Detail"].default_value = 16.0
+wisp_noise.inputs["Roughness"].default_value = 0.7
+wisp_noise.inputs["Distortion"].default_value = 0.4
+links.new(mapping.outputs["Vector"], wisp_noise.inputs["Vector"])
+
+mix_clouds = nodes.new("ShaderNodeMixRGB")
+mix_clouds.location = (100, -200)
+mix_clouds.blend_type = "MIX"
+mix_clouds.inputs["Fac"].default_value = 0.35
+links.new(cloud_noise.outputs["Fac"], mix_clouds.inputs["Color1"])
+links.new(wisp_noise.outputs["Fac"], mix_clouds.inputs["Color2"])
+
+ramp_color = nodes.new("ShaderNodeValToRGB")
+ramp_color.location = (320, -150)
+ramp_color.label = "Venus Cloud Color Ramp"
+ramp_color.color_ramp.elements[0].position = 0.2
+ramp_color.color_ramp.elements[0].color = (0.72, 0.60, 0.35, 1)
+ramp_color.color_ramp.elements[1].position = 0.8
+ramp_color.color_ramp.elements[1].color = (0.95, 0.88, 0.68, 1)
+links.new(mix_clouds.outputs["Color"], ramp_color.inputs["Fac"])
+
+mix_tex_cloud = nodes.new("ShaderNodeMixRGB")
+mix_tex_cloud.location = (520, 100)
+mix_tex_cloud.blend_type = "OVERLAY"
+mix_tex_cloud.inputs["Fac"].default_value = 0.30
+links.new(img_node.outputs["Color"], mix_tex_cloud.inputs["Color1"])
+links.new(ramp_color.outputs["Color"], mix_tex_cloud.inputs["Color2"])
+links.new(mix_tex_cloud.outputs["Color"], bsdf.inputs["Base Color"])
+
+ramp_rough = nodes.new("ShaderNodeValToRGB")
+ramp_rough.location = (320, -380)
+ramp_rough.label = "Roughness Ramp"
+ramp_rough.color_ramp.elements[0].position = 0.3
+ramp_rough.color_ramp.elements[0].color = (0.35, 0.35, 0.35, 1)
+ramp_rough.color_ramp.elements[1].position = 0.7
+ramp_rough.color_ramp.elements[1].color = (0.60, 0.60, 0.60, 1)
+links.new(mix_clouds.outputs["Color"], ramp_rough.inputs["Fac"])
+links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
+
+bump = nodes.new("ShaderNodeBump")
+bump.location = (320, -560)
+bump.inputs["Strength"].default_value = 0.25
+bump.inputs["Distance"].default_value = 0.03
+links.new(mix_clouds.outputs["Color"], bump.inputs["Height"])
+links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+venus.data.materials.append(mat)
+
+bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
+sun = bpy.context.active_object
+sun.name = "Sun_Key"
+sun.data.energy = 10.0
+sun.data.angle = 0.53
+sun.data.color = (1.0, 0.97, 0.88)
+sun.rotation_euler = (1.5708, 0.0, -1.5708)
+
+bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
+fill = bpy.context.active_object
+fill.name = "Space_Fill"
+fill.data.energy = 6.0
+fill.data.color = (0.5, 0.55, 0.7)
+fill.data.shadow_soft_size = 10.0
+
+bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
+fill2 = bpy.context.active_object
+fill2.name = "Space_Fill2"
+fill2.data.energy = 4.0
+fill2.data.color = (0.5, 0.55, 0.7)
+fill2.data.shadow_soft_size = 10.0
+
+bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
+rim = bpy.context.active_object
+rim.name = "Rim_Light"
+rim.data.energy = 8.0
+rim.data.size = 8.0
+rim.data.color = (1.0, 0.88, 0.60)
+rim.rotation_euler = (1.57, 0, 1.57)
+
+bpy.ops.object.light_add(type='POINT', location=(0, -10, 3))
+atmo = bpy.context.active_object
+atmo.name = "Atmosphere_Glow"
+atmo.data.energy = 3.0
+atmo.data.color = (1.0, 0.80, 0.45)
+atmo.data.shadow_soft_size = 15.0
+
+HDR_PATH = "add HDR path here (e.g. C:/Users/YourName/Downloads/hdr.png)"
+
+world = bpy.data.worlds["World"]
+world.use_nodes = True
+world_nodes = world.node_tree.nodes
+world_links = world.node_tree.links
+world_nodes.clear()
+
+output_world = world_nodes.new("ShaderNodeOutputWorld")
+output_world.location = (900, 0)
+
+bg_ambient = world_nodes.new("ShaderNodeBackground")
+bg_ambient.location = (300, 100)
+bg_ambient.inputs["Color"].default_value = (0.12, 0.12, 0.14, 1.0)
+bg_ambient.inputs["Strength"].default_value = 0.6
+
+img_tex = world_nodes.new("ShaderNodeTexImage")
+img_tex.location = (-200, -150)
+img_tex.extension = 'EXTEND'
+
+abs_hdr_path = bpy.path.abspath(HDR_PATH)
+if os.path.exists(abs_hdr_path):
+    hdr_img = bpy.data.images.load(abs_hdr_path)
+    hdr_img.colorspace_settings.name = 'sRGB'
+    img_tex.image = hdr_img
+    print(f"[World] Background image loaded: {abs_hdr_path}")
+else:
+    print(f"[World] WARNING – image not found at: {abs_hdr_path}")
+
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
+
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"], img_tex.inputs["Vector"])
+
+bg_image = world_nodes.new("ShaderNodeBackground")
+bg_image.location = (300, -150)
+bg_image.inputs["Strength"].default_value = 1.0
+
+world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
+
+light_path = world_nodes.new("ShaderNodeLightPath")
+light_path.location = (300, 300)
+
+mix_shader = world_nodes.new("ShaderNodeMixShader")
+mix_shader.location = (650, 0)
+
+world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
+world_links.new(bg_ambient.outputs["Background"], mix_shader.inputs[1])
+world_links.new(bg_image.outputs["Background"], mix_shader.inputs[2])
+world_links.new(mix_shader.outputs["Shader"], output_world.inputs["Surface"])
+
+bpy.ops.object.camera_add(location=(0, -12, 0))
+cam = bpy.context.active_object
+cam.name = "Camera"
+cam.rotation_euler = (1.5708, 0.0, 0.0)
+cam.data.lens = 50
+
+bpy.context.scene.camera = cam
+
+scene = bpy.context.scene
+scene.render.engine = 'CYCLES'
+scene.cycles.device = 'GPU'
+scene.cycles.samples = 128
+scene.cycles.use_denoising = True
+scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+
+scene.render.resolution_x = 1920
+scene.render.resolution_y = 1080
+scene.render.resolution_percentage = 100
+
+scene.view_settings.view_transform = 'Filmic'
+scene.view_settings.look = 'Medium High Contrast'
+scene.view_settings.exposure = 0.3
+scene.view_settings.gamma = 1.0
+
+scene.render.image_settings.file_format = 'FFMPEG'
+ffmpeg = scene.render.ffmpeg
+ffmpeg.format               = 'MPEG4'
+ffmpeg.codec                = 'H264'
+ffmpeg.constant_rate_factor = 'HIGH'
+ffmpeg.ffmpeg_preset        = 'GOOD'
+ffmpeg.audio_codec          = 'NONE'
+
+scene.render.filepath = OUTPUT_PATH
+
+scene.frame_start = 1
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
+
+bpy.context.view_layer.objects.active = venus
+venus.select_set(True)
+
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
+
+print("\n" + "=" * 60)
+print("VENUS ROTATION ANIMATION — SEAMLESS LOOP")
+print("=" * 60)
+print(f"Total frames         : {TOTAL_FRAMES}")
+print(f"Frame rate           : {FPS} fps")
+print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+print(f"Rotation direction   : RETROGRADE (backwards)")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 2.0× slower (480 vs 240 frames)")
+print(f"Speed vs Mercury     : clearly slower (480 vs 360 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}° (nearly upside-down)")
+print("=" * 60 + "\n")
+
+for frame_num in range(scene.frame_start, scene.frame_end + 1):
+    scene.frame_set(frame_num)
+
+    progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * -360.0)
+
+    venus.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
+
+    venus.keyframe_insert(data_path="rotation_euler", index=0)
+    venus.keyframe_insert(data_path="rotation_euler", index=2)
+
+for fc in venus.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
+
+scene.frame_set(1)
+
+print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
+print(f"✓ Output: {OUTPUT_PATH}")
+print("\n" + "=" * 60)
+print("TO RENDER THE VIDEO:")
+print("=" * 60)
+print("  Render menu → Render Animation  (or Ctrl+F12)")
+print(f"  Output will be saved to: {OUTPUT_PATH}")
+print("=" * 60 + "\n")
+
+            </code></pre>
+          </div>
+
+          <div class="script-notes" aria-labelledby="notes-heading">
+            <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
+            <ul class="script-notes-list">
+                <li>Replace the placeholder code above with your actual Blender Python script.</li>
+                <li>Venus has the longest rotation period of any planet in the Solar System, taking about 243 Earth days to complete one rotation, according to NASA.</li>
+                <li>Distance is scaled for visualization — not true astronomical units.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+<footer class="project-footer" role="contentinfo">
+  <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+</footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var btn = document.getElementById('copyBtn');
+      var code = document.getElementById('scriptCode');
+      var dlBtn = document.getElementById('downloadBtn');
+
+      if (btn && code) {
+        btn.addEventListener('click', function () {
+          navigator.clipboard.writeText(code.innerText).then(function () {
+            btn.textContent = 'Copied!';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          }).catch(function () {
+            btn.textContent = 'Failed';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          });
+        });
+      }
+
+      if (dlBtn && code) {
+        dlBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var blob = new Blob([code.innerText], { type: 'text/plain' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'venus.py';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

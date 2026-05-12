@@ -54,22 +54,21 @@ import bpy
 import os
 import math
 
-TEXTURE_PATH = "add texture path here (e.g., C:/Users/YourName/Downloads/mercury_texture.jpg)"
-OUTPUT_PATH = "add output path here (e.g., C:/Users/YourName/Downloads/mercury_frames/frame_)"
+TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_mercury.jpg"
+OUTPUT_PATH = "C:/Users/Ronzhem Dioso/Downloads/mercury_render.mp4"
 
 AXIAL_TILT_DEGREES = 2.11
+
+TOTAL_FRAMES = 360
+FPS = 24
 
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
 
-for block in bpy.data.meshes:
-    bpy.data.meshes.remove(block)
-for block in bpy.data.materials:
-    bpy.data.materials.remove(block)
-for block in bpy.data.images:
-    bpy.data.images.remove(block)
-for block in bpy.data.lights:
-    bpy.data.lights.remove(block)
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
 
 bpy.ops.mesh.primitive_uv_sphere_add(
     segments=128,
@@ -229,15 +228,15 @@ if os.path.exists(abs_hdr_path):
 else:
     print(f"[World] WARNING – image not found at: {abs_hdr_path}")
 
-tex_coord = world_nodes.new("ShaderNodeTexCoord")
-tex_coord.location = (-600, -150)
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
 
-mapping = world_nodes.new("ShaderNodeMapping")
-mapping.location = (-400, -150)
-mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
 
-world_links.new(tex_coord.outputs["Window"], mapping.inputs["Vector"])
-world_links.new(mapping.outputs["Vector"], img_tex.inputs["Vector"])
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"], img_tex.inputs["Vector"])
 
 bg_image = world_nodes.new("ShaderNodeBackground")
 bg_image.location = (300, -150)
@@ -280,62 +279,60 @@ scene.view_settings.look = 'High Contrast'
 scene.view_settings.exposure = 0.0
 scene.view_settings.gamma = 1.0
 
-scene.render.image_settings.file_format = 'PNG'
+scene.render.image_settings.file_format = 'FFMPEG'
+ffmpeg = scene.render.ffmpeg
+ffmpeg.format               = 'MPEG4'
+ffmpeg.codec                = 'H264'
+ffmpeg.constant_rate_factor = 'HIGH'
+ffmpeg.ffmpeg_preset        = 'GOOD'
+ffmpeg.audio_codec          = 'NONE'
+
 scene.render.filepath = OUTPUT_PATH
 
-TOTAL_FRAMES = 240
-FPS = 24
-
 scene.frame_start = 1
-scene.frame_end = TOTAL_FRAMES
-scene.render.fps = FPS
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
 
 bpy.context.view_layer.objects.active = mercury
 mercury.select_set(True)
 
-rotation_multiplier = 1.0
-
 axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
 
 print("\n" + "=" * 60)
-print("MERCURY ROTATION ANIMATION WITH AXIAL TILT")
+print("MERCURY ROTATION ANIMATION — SEAMLESS LOOP")
 print("=" * 60)
-print(f"Total frames: {TOTAL_FRAMES}")
-print(f"Frame rate: {FPS} fps")
-print(f"Animation duration: {TOTAL_FRAMES / FPS} seconds")
-print(f"Rotation multiplier: {rotation_multiplier}x")
-print(f"Axial tilt: {AXIAL_TILT_DEGREES}°")
+print(f"Total frames         : {TOTAL_FRAMES}")
+print(f"Frame rate           : {FPS} fps")
+print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 1.5× slower (360 vs 240 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}°")
 print("=" * 60 + "\n")
 
 for frame_num in range(scene.frame_start, scene.frame_end + 1):
     scene.frame_set(frame_num)
 
-    progress = (frame_num - 1) / (TOTAL_FRAMES - 1)
-    total_rotation_degrees = progress * 360.0 * rotation_multiplier
-    total_rotation_radians = math.radians(total_rotation_degrees)
+    progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * 360.0)
 
     mercury.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
     mercury.keyframe_insert(data_path="rotation_euler", index=0)
     mercury.keyframe_insert(data_path="rotation_euler", index=2)
 
+for fc in mercury.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
+
 scene.frame_set(1)
 
-print("✓ Keyframes inserted successfully!")
-print(f"✓ Mercury rotates around Z-axis with {AXIAL_TILT_DEGREES}° axial tilt on X-axis")
+print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
+print(f"✓ Output: {OUTPUT_PATH}")
 print("\n" + "=" * 60)
-print("HOW TO VIEW THE ANIMATION:")
+print("TO RENDER THE VIDEO:")
 print("=" * 60)
-print("1. Click on 'Mercury' in the outliner (right panel)")
-print("2. Press SPACEBAR to play/pause animation")
-print("3. Watch Mercury rotate with a realistic tilt")
-print("4. Drag the timeline slider to scrub through frames")
-print("\nTo adjust the tilt:")
-print("- Edit 'AXIAL_TILT_DEGREES' variable at the top")
-print("- Mercury's real tilt is 0.034°, but 2.11° looks better visually")
-print("\nTo change rotation speed:")
-print("- Increase 'rotation_multiplier' for faster rotation")
-print("- Decrease 'rotation_multiplier' for slower rotation")
+print("  Render menu → Render Animation  (or Ctrl+F12)")
+print(f"  Output will be saved to: {OUTPUT_PATH}")
 print("=" * 60 + "\n")
 
             </code></pre>

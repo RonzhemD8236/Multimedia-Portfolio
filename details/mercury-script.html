@@ -35,7 +35,7 @@
         </div>
       </section>
 
-      <section class="script-video" aria-labelledby="video-heading">
+       <section class="script-video" aria-labelledby="video-heading">
         <div class="script-video-inner">
           <div class="video-wrapper">
             <iframe
@@ -64,290 +64,290 @@
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
-              import bpy
-              import os
-              import math
+import bpy
+import os
+import math
 
-              TEXTURE_PATH = "add texture path here (e.g. C:/Users/YourName/Downloads/mercury_texture.jpg)"
-              OUTPUT_PATH = "add output path here (e.g. C:/Users/YourName/Downloads/mercury_render.mp4)"
+TEXTURE_PATH = "add texture path here (e.g. C:/Users/YourName/Downloads/mercury_texture.jpg)"
+OUTPUT_PATH = "add output path here (e.g. C:/Users/YourName/Downloads/mercury_render.mp4)"
 
-              AXIAL_TILT_DEGREES = 2.11
+AXIAL_TILT_DEGREES = 2.11
 
-              TOTAL_FRAMES = 360
-              FPS = 24
+TOTAL_FRAMES = 360
+FPS = 24
 
-              bpy.ops.object.select_all(action='SELECT')
-              bpy.ops.object.delete(use_global=False)
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
 
-              for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
-              for block in bpy.data.materials: bpy.data.materials.remove(block)
-              for block in bpy.data.images:    bpy.data.images.remove(block)
-              for block in bpy.data.lights:    bpy.data.lights.remove(block)
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
 
-              bpy.ops.mesh.primitive_uv_sphere_add(
-                  segments=128,
-                  ring_count=64,
-                  radius=2.0,
-                  location=(0, 0, 0)
-              )
-              mercury = bpy.context.active_object
-              mercury.name = "Mercury"
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=128,
+    ring_count=64,
+    radius=2.0,
+    location=(0, 0, 0)
+)
+mercury = bpy.context.active_object
+mercury.name = "Mercury"
 
-              bpy.ops.object.shade_smooth()
+bpy.ops.object.shade_smooth()
 
-              bpy.ops.object.modifier_add(type='SMOOTH')
-              mercury.modifiers["Smooth"].factor = 0.5
-              mercury.modifiers["Smooth"].iterations = 2
+bpy.ops.object.modifier_add(type='SMOOTH')
+mercury.modifiers["Smooth"].factor = 0.5
+mercury.modifiers["Smooth"].iterations = 2
 
-              mat = bpy.data.materials.new(name="Mercury_Material")
-              mat.use_nodes = True
-              nodes = mat.node_tree.nodes
-              links = mat.node_tree.links
-              nodes.clear()
+mat = bpy.data.materials.new(name="Mercury_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
 
-              output = nodes.new("ShaderNodeOutputMaterial")
-              output.location = (900, 0)
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (900, 0)
 
-              bsdf = nodes.new("ShaderNodeBsdfPrincipled")
-              bsdf.location = (550, 0)
-              bsdf.inputs["Base Color"].default_value = (0.42, 0.40, 0.38, 1.0)
-              bsdf.inputs["Roughness"].default_value = 0.88
-              bsdf.inputs["Metallic"].default_value = 0.0
-              bsdf.inputs["Specular IOR Level"].default_value = 0.04
-              links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (550, 0)
+bsdf.inputs["Base Color"].default_value = (0.42, 0.40, 0.38, 1.0)
+bsdf.inputs["Roughness"].default_value = 0.88
+bsdf.inputs["Metallic"].default_value = 0.0
+bsdf.inputs["Specular IOR Level"].default_value = 0.04
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
 
-              tex_coord = nodes.new("ShaderNodeTexCoord")
-              tex_coord.location = (-700, 0)
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-700, 0)
 
-              mapping = nodes.new("ShaderNodeMapping")
-              mapping.location = (-500, 0)
-              mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
-              links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-500, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
 
-              img_node = nodes.new("ShaderNodeTexImage")
-              img_node.location = (-250, 150)
-              img_node.label = "Mercury Color Map"
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location = (-250, 150)
+img_node.label = "Mercury Color Map"
 
-              abs_path = bpy.path.abspath(TEXTURE_PATH)
-              if os.path.exists(abs_path):
-                  img = bpy.data.images.load(abs_path)
-                  img_node.image = img
-                  print(f"[Mercury] Texture loaded: {abs_path}")
-              else:
-                  print(f"[Mercury] WARNING – texture not found at: {abs_path}")
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Mercury] Texture loaded: {abs_path}")
+else:
+    print(f"[Mercury] WARNING – texture not found at: {abs_path}")
 
-              links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
-              links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
 
-              noise1 = nodes.new("ShaderNodeTexNoise")
-              noise1.location = (-250, -150)
-              noise1.label = "Large Scale Noise"
-              noise1.inputs["Scale"].default_value = 4.0
-              noise1.inputs["Detail"].default_value = 10.0
-              noise1.inputs["Roughness"].default_value = 0.8
-              noise1.inputs["Distortion"].default_value = 0.3
-              links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
+noise1 = nodes.new("ShaderNodeTexNoise")
+noise1.location = (-250, -150)
+noise1.label = "Large Scale Noise"
+noise1.inputs["Scale"].default_value = 4.0
+noise1.inputs["Detail"].default_value = 10.0
+noise1.inputs["Roughness"].default_value = 0.8
+noise1.inputs["Distortion"].default_value = 0.3
+links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
 
-              noise2 = nodes.new("ShaderNodeTexNoise")
-              noise2.location = (-250, -350)
-              noise2.label = "Fine Detail Noise"
-              noise2.inputs["Scale"].default_value = 20.0
-              noise2.inputs["Detail"].default_value = 15.0
-              noise2.inputs["Roughness"].default_value = 0.9
-              noise2.inputs["Distortion"].default_value = 0.1
-              links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
+noise2 = nodes.new("ShaderNodeTexNoise")
+noise2.location = (-250, -350)
+noise2.label = "Fine Detail Noise"
+noise2.inputs["Scale"].default_value = 20.0
+noise2.inputs["Detail"].default_value = 15.0
+noise2.inputs["Roughness"].default_value = 0.9
+noise2.inputs["Distortion"].default_value = 0.1
+links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
 
-              mix_noise = nodes.new("ShaderNodeMixRGB")
-              mix_noise.location = (50, -250)
-              mix_noise.blend_type = "MIX"
-              mix_noise.inputs["Fac"].default_value = 0.4
-              links.new(noise1.outputs["Fac"], mix_noise.inputs["Color1"])
-              links.new(noise2.outputs["Fac"], mix_noise.inputs["Color2"])
+mix_noise = nodes.new("ShaderNodeMixRGB")
+mix_noise.location = (50, -250)
+mix_noise.blend_type = "MIX"
+mix_noise.inputs["Fac"].default_value = 0.4
+links.new(noise1.outputs["Fac"], mix_noise.inputs["Color1"])
+links.new(noise2.outputs["Fac"], mix_noise.inputs["Color2"])
 
-              ramp_rough = nodes.new("ShaderNodeValToRGB")
-              ramp_rough.location = (250, -200)
-              ramp_rough.label = "Roughness Ramp"
-              ramp_rough.color_ramp.elements[0].position = 0.2
-              ramp_rough.color_ramp.elements[0].color = (0.75, 0.75, 0.75, 1)
-              ramp_rough.color_ramp.elements[1].position = 0.8
-              ramp_rough.color_ramp.elements[1].color = (0.95, 0.95, 0.95, 1)
-              links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
-              links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
+ramp_rough = nodes.new("ShaderNodeValToRGB")
+ramp_rough.location = (250, -200)
+ramp_rough.label = "Roughness Ramp"
+ramp_rough.color_ramp.elements[0].position = 0.2
+ramp_rough.color_ramp.elements[0].color = (0.75, 0.75, 0.75, 1)
+ramp_rough.color_ramp.elements[1].position = 0.8
+ramp_rough.color_ramp.elements[1].color = (0.95, 0.95, 0.95, 1)
+links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
+links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
 
-              bump = nodes.new("ShaderNodeBump")
-              bump.location = (250, -400)
-              bump.inputs["Strength"].default_value = 0.6
-              bump.inputs["Distance"].default_value = 0.05
-              links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
-              links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+bump = nodes.new("ShaderNodeBump")
+bump.location = (250, -400)
+bump.inputs["Strength"].default_value = 0.6
+bump.inputs["Distance"].default_value = 0.05
+links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
+links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
-              mercury.data.materials.append(mat)
+mercury.data.materials.append(mat)
 
-              bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
-              sun = bpy.context.active_object
-              sun.name = "Sun_Key"
-              sun.data.energy = 8.0
-              sun.data.angle = 0.53
-              sun.data.color = (1.0, 0.95, 0.85)
-              sun.rotation_euler = (1.5708, 0.0, -1.5708)
+bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
+sun = bpy.context.active_object
+sun.name = "Sun_Key"
+sun.data.energy = 8.0
+sun.data.angle = 0.53
+sun.data.color = (1.0, 0.95, 0.85)
+sun.rotation_euler = (1.5708, 0.0, -1.5708)
 
-              bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
-              fill = bpy.context.active_object
-              fill.name = "Space_Fill"
-              fill.data.energy = 8.0
-              fill.data.color = (0.5, 0.55, 0.7)
-              fill.data.shadow_soft_size = 10.0
+bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
+fill = bpy.context.active_object
+fill.name = "Space_Fill"
+fill.data.energy = 8.0
+fill.data.color = (0.5, 0.55, 0.7)
+fill.data.shadow_soft_size = 10.0
 
-              bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
-              fill2 = bpy.context.active_object
-              fill2.name = "Space_Fill2"
-              fill2.data.energy = 6.0
-              fill2.data.color = (0.5, 0.55, 0.7)
-              fill2.data.shadow_soft_size = 10.0
+bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
+fill2 = bpy.context.active_object
+fill2.name = "Space_Fill2"
+fill2.data.energy = 6.0
+fill2.data.color = (0.5, 0.55, 0.7)
+fill2.data.shadow_soft_size = 10.0
 
-              bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
-              rim = bpy.context.active_object
-              rim.name = "Rim_Light"
-              rim.data.energy = 5.0
-              rim.data.size = 8.0
-              rim.data.color = (0.7, 0.75, 1.0)
-              rim.rotation_euler = (1.57, 0, 1.57)
+bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
+rim = bpy.context.active_object
+rim.name = "Rim_Light"
+rim.data.energy = 5.0
+rim.data.size = 8.0
+rim.data.color = (0.7, 0.75, 1.0)
+rim.rotation_euler = (1.57, 0, 1.57)
 
-              HDR_PATH = "add HDR path here (e.g. C:/Users/YourName/Downloads/hdr.png)"
+HDR_PATH = "add HDR path here (e.g. C:/Users/YourName/Downloads/hdr.png)"
 
-              world = bpy.data.worlds["World"]
-              world.use_nodes = True
-              world_nodes = world.node_tree.nodes
-              world_links = world.node_tree.links
-              world_nodes.clear()
+world = bpy.data.worlds["World"]
+world.use_nodes = True
+world_nodes = world.node_tree.nodes
+world_links = world.node_tree.links
+world_nodes.clear()
 
-              output_world = world_nodes.new("ShaderNodeOutputWorld")
-              output_world.location = (900, 0)
+output_world = world_nodes.new("ShaderNodeOutputWorld")
+output_world.location = (900, 0)
 
-              bg_ambient = world_nodes.new("ShaderNodeBackground")
-              bg_ambient.location = (300, 100)
-              bg_ambient.inputs["Color"].default_value = (0.15, 0.15, 0.15, 1.0)
-              bg_ambient.inputs["Strength"].default_value = 0.8
+bg_ambient = world_nodes.new("ShaderNodeBackground")
+bg_ambient.location = (300, 100)
+bg_ambient.inputs["Color"].default_value = (0.15, 0.15, 0.15, 1.0)
+bg_ambient.inputs["Strength"].default_value = 0.8
 
-              img_tex = world_nodes.new("ShaderNodeTexImage")
-              img_tex.location = (-200, -150)
-              img_tex.extension = 'EXTEND'
+img_tex = world_nodes.new("ShaderNodeTexImage")
+img_tex.location = (-200, -150)
+img_tex.extension = 'EXTEND'
 
-              abs_hdr_path = bpy.path.abspath(HDR_PATH)
-              if os.path.exists(abs_hdr_path):
-                  hdr_img = bpy.data.images.load(abs_hdr_path)
-                  hdr_img.colorspace_settings.name = 'sRGB'
-                  img_tex.image = hdr_img
-                  print(f"[World] Background image loaded: {abs_hdr_path}")
-              else:
-                  print(f"[World] WARNING – image not found at: {abs_hdr_path}")
+abs_hdr_path = bpy.path.abspath(HDR_PATH)
+if os.path.exists(abs_hdr_path):
+    hdr_img = bpy.data.images.load(abs_hdr_path)
+    hdr_img.colorspace_settings.name = 'sRGB'
+    img_tex.image = hdr_img
+    print(f"[World] Background image loaded: {abs_hdr_path}")
+else:
+    print(f"[World] WARNING – image not found at: {abs_hdr_path}")
 
-              tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
-              tex_coord_world.location = (-600, -150)
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
 
-              mapping_world = world_nodes.new("ShaderNodeMapping")
-              mapping_world.location = (-400, -150)
-              mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
 
-              world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
-              world_links.new(mapping_world.outputs["Vector"], img_tex.inputs["Vector"])
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"], img_tex.inputs["Vector"])
 
-              bg_image = world_nodes.new("ShaderNodeBackground")
-              bg_image.location = (300, -150)
-              bg_image.inputs["Strength"].default_value = 1.0
+bg_image = world_nodes.new("ShaderNodeBackground")
+bg_image.location = (300, -150)
+bg_image.inputs["Strength"].default_value = 1.0
 
-              world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
+world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
 
-              light_path = world_nodes.new("ShaderNodeLightPath")
-              light_path.location = (300, 300)
+light_path = world_nodes.new("ShaderNodeLightPath")
+light_path.location = (300, 300)
 
-              mix_shader = world_nodes.new("ShaderNodeMixShader")
-              mix_shader.location = (650, 0)
+mix_shader = world_nodes.new("ShaderNodeMixShader")
+mix_shader.location = (650, 0)
 
-              world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
-              world_links.new(bg_ambient.outputs["Background"], mix_shader.inputs[1])
-              world_links.new(bg_image.outputs["Background"], mix_shader.inputs[2])
-              world_links.new(mix_shader.outputs["Shader"], output_world.inputs["Surface"])
+world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
+world_links.new(bg_ambient.outputs["Background"], mix_shader.inputs[1])
+world_links.new(bg_image.outputs["Background"], mix_shader.inputs[2])
+world_links.new(mix_shader.outputs["Shader"], output_world.inputs["Surface"])
 
-              bpy.ops.object.camera_add(location=(0, -12, 0))
-              cam = bpy.context.active_object
-              cam.name = "Camera"
-              cam.rotation_euler = (1.5708, 0.0, 0.0)
-              cam.data.lens = 50
+bpy.ops.object.camera_add(location=(0, -12, 0))
+cam = bpy.context.active_object
+cam.name = "Camera"
+cam.rotation_euler = (1.5708, 0.0, 0.0)
+cam.data.lens = 50
 
-              bpy.context.scene.camera = cam
+bpy.context.scene.camera = cam
 
-              scene = bpy.context.scene
-              scene.render.engine = 'CYCLES'
-              scene.cycles.device = 'GPU'
-              scene.cycles.samples = 128
-              scene.cycles.use_denoising = True
-              scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+scene = bpy.context.scene
+scene.render.engine = 'CYCLES'
+scene.cycles.device = 'GPU'
+scene.cycles.samples = 128
+scene.cycles.use_denoising = True
+scene.cycles.denoiser = 'OPENIMAGEDENOISE'
 
-              scene.render.resolution_x = 1920
-              scene.render.resolution_y = 1080
-              scene.render.resolution_percentage = 100
+scene.render.resolution_x = 1920
+scene.render.resolution_y = 1080
+scene.render.resolution_percentage = 100
 
-              scene.view_settings.view_transform = 'Filmic'
-              scene.view_settings.look = 'High Contrast'
-              scene.view_settings.exposure = 0.0
-              scene.view_settings.gamma = 1.0
+scene.view_settings.view_transform = 'Filmic'
+scene.view_settings.look = 'High Contrast'
+scene.view_settings.exposure = 0.0
+scene.view_settings.gamma = 1.0
 
-              scene.render.image_settings.file_format = 'FFMPEG'
-              ffmpeg = scene.render.ffmpeg
-              ffmpeg.format               = 'MPEG4'
-              ffmpeg.codec                = 'H264'
-              ffmpeg.constant_rate_factor = 'HIGH'
-              ffmpeg.ffmpeg_preset        = 'GOOD'
-              ffmpeg.audio_codec          = 'NONE'
+scene.render.image_settings.file_format = 'FFMPEG'
+ffmpeg = scene.render.ffmpeg
+ffmpeg.format               = 'MPEG4'
+ffmpeg.codec                = 'H264'
+ffmpeg.constant_rate_factor = 'HIGH'
+ffmpeg.ffmpeg_preset        = 'GOOD'
+ffmpeg.audio_codec          = 'NONE'
 
-              scene.render.filepath = OUTPUT_PATH
+scene.render.filepath = OUTPUT_PATH
 
-              scene.frame_start = 1
-              scene.frame_end   = TOTAL_FRAMES
-              scene.render.fps  = FPS
+scene.frame_start = 1
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
 
-              bpy.context.view_layer.objects.active = mercury
-              mercury.select_set(True)
+bpy.context.view_layer.objects.active = mercury
+mercury.select_set(True)
 
-              axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
 
-              print("\n" + "=" * 60)
-              print("MERCURY ROTATION ANIMATION — SEAMLESS LOOP")
-              print("=" * 60)
-              print(f"Total frames         : {TOTAL_FRAMES}")
-              print(f"Frame rate           : {FPS} fps")
-              print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
-              print(f"Degrees traveled     : 360° (full seamless loop)")
-              print(f"Speed vs Earth       : 1.5× slower (360 vs 240 frames)")
-              print(f"Axial tilt           : {AXIAL_TILT_DEGREES}°")
-              print("=" * 60 + "\n")
+print("\n" + "=" * 60)
+print("MERCURY ROTATION ANIMATION — SEAMLESS LOOP")
+print("=" * 60)
+print(f"Total frames         : {TOTAL_FRAMES}")
+print(f"Frame rate           : {FPS} fps")
+print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 1.5× slower (360 vs 240 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}°")
+print("=" * 60 + "\n")
 
-              for frame_num in range(scene.frame_start, scene.frame_end + 1):
-                  scene.frame_set(frame_num)
+for frame_num in range(scene.frame_start, scene.frame_end + 1):
+    scene.frame_set(frame_num)
 
-                  progress = (frame_num - 1) / TOTAL_FRAMES
-                  total_rotation_radians = math.radians(progress * 360.0)
+    progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * 360.0)
 
-                  mercury.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
+    mercury.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
-                  mercury.keyframe_insert(data_path="rotation_euler", index=0)
-                  mercury.keyframe_insert(data_path="rotation_euler", index=2)
+    mercury.keyframe_insert(data_path="rotation_euler", index=0)
+    mercury.keyframe_insert(data_path="rotation_euler", index=2)
 
-              for fc in mercury.animation_data.action.fcurves:
-                  for kp in fc.keyframe_points:
-                      kp.interpolation = 'LINEAR'
+for fc in mercury.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
 
-              scene.frame_set(1)
+scene.frame_set(1)
 
-              print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
-              print(f"✓ Output: {OUTPUT_PATH}")
-              print("\n" + "=" * 60)
-              print("TO RENDER THE VIDEO:")
-              print("=" * 60)
-              print("  Render menu → Render Animation  (or Ctrl+F12)")
-              print(f"  Output will be saved to: {OUTPUT_PATH}")
-              print("=" * 60 + "\n")
+print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
+print(f"✓ Output: {OUTPUT_PATH}")
+print("\n" + "=" * 60)
+print("TO RENDER THE VIDEO:")
+print("=" * 60)
+print("  Render menu → Render Animation  (or Ctrl+F12)")
+print(f"  Output will be saved to: {OUTPUT_PATH}")
+print("=" * 60 + "\n")
 
             </code></pre>
           </div>

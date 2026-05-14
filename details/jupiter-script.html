@@ -30,8 +30,8 @@
       <section class="script-hero" aria-label="Script detail hero">
         <div class="script-hero-inner">
           <span class="project-label">Python / Blender Script</span>
-          <h1 class="script-title">Earth – Blender Script</h1>
-          <p class="script-subtitle">The Python script used inside Blender to animate and configure Earth's orbital motion and rotation.</p>
+          <h1 class="script-title">Jupiter – Blender Script</h1>
+          <p class="script-subtitle">The Python script used inside Blender to animate and configure Jupiter's orbital motion and rotation.</p>
         </div>
       </section>
 
@@ -40,7 +40,7 @@
           <div class="video-wrapper">
             <iframe
               src="https://www.youtube.com/embed/iN35-heUFko"
-              title="Earth Blender Animation Demo"
+              title="Jupiter Blender Animation Demo"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
@@ -56,11 +56,11 @@
             <div class="script-block-header">
               <div class="script-block-header-left">
                 <span class="script-lang-dot" aria-hidden="true"></span>
-                <span class="script-filename">earth.py</span>
+                <span class="script-filename">jupiter.py</span>
               </div>
               <div class="script-block-header-right">
                 <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy script to clipboard">Copy</button>
-                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download earth.py script">Download</a>
+                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download jupiter.py script">Download</a>
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
@@ -68,17 +68,13 @@ import bpy
 import os
 import math
 
-EARTH_TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_earth.jpg"
-MOON_TEXTURE_PATH  = "C:/Users/Ronzhem Dioso/Downloads/8k_moon.jpg"
-OUTPUT_PATH        = "C:/Users/Ronzhem Dioso/Downloads/earth_render.mp4"
+TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_jupiter.jpg"
+OUTPUT_PATH  = "C:/Users/Ronzhem Dioso/Downloads/jupiter_render.mp4"
 
-EARTH_AXIAL_TILT_DEGREES  = 23.5
-MOON_AXIAL_TILT_DEGREES   = 6.68
+AXIAL_TILT_DEGREES = 3.13
 
-TOTAL_FRAMES              = 240
-FPS                       = 24
-EARTH_ROTATION_MULTIPLIER = 1.0
-MOON_ORBIT_SPEED          = 1.0
+TOTAL_FRAMES = 100
+FPS          = 24
 
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
@@ -88,221 +84,156 @@ for block in bpy.data.materials: bpy.data.materials.remove(block)
 for block in bpy.data.images:    bpy.data.images.remove(block)
 for block in bpy.data.lights:    bpy.data.lights.remove(block)
 
-def build_planet_material(name, texture_path, base_color,
-                           roughness=0.85, metallic=0.0,
-                           noise_scale=4.0, bump_strength=0.5):
-    mat = bpy.data.materials.new(name=name)
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    nodes.clear()
-
-    output = nodes.new("ShaderNodeOutputMaterial")
-    output.location = (1400, 0)
-
-    tex_coord = nodes.new("ShaderNodeTexCoord")
-    tex_coord.location = (-900, 0)
-
-    mapping = nodes.new("ShaderNodeMapping")
-    mapping.location = (-700, 0)
-    mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
-    links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
-
-    img_node = nodes.new("ShaderNodeTexImage")
-    img_node.location = (-450, 200)
-    img_node.label = f"{name} Color Map"
-
-    abs_path = bpy.path.abspath(texture_path)
-    if os.path.exists(abs_path):
-        img = bpy.data.images.load(abs_path)
-        img_node.image = img
-        print(f"[{name}] Texture loaded: {abs_path}")
-    else:
-        print(f"[{name}] WARNING – texture not found: {abs_path}")
-
-    links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
-
-    noise1 = nodes.new("ShaderNodeTexNoise")
-    noise1.location = (-450, -100)
-    noise1.inputs["Scale"].default_value      = noise_scale
-    noise1.inputs["Detail"].default_value     = 10.0
-    noise1.inputs["Roughness"].default_value  = 0.8
-    noise1.inputs["Distortion"].default_value = 0.3
-    links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
-
-    noise2 = nodes.new("ShaderNodeTexNoise")
-    noise2.location = (-450, -320)
-    noise2.inputs["Scale"].default_value      = noise_scale * 5
-    noise2.inputs["Detail"].default_value     = 15.0
-    noise2.inputs["Roughness"].default_value  = 0.9
-    noise2.inputs["Distortion"].default_value = 0.1
-    links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
-
-    mix_noise = nodes.new("ShaderNodeMixRGB")
-    mix_noise.location = (-200, -200)
-    mix_noise.blend_type = "MIX"
-    mix_noise.inputs["Fac"].default_value = 0.4
-    links.new(noise1.outputs["Fac"], mix_noise.inputs["Color1"])
-    links.new(noise2.outputs["Fac"], mix_noise.inputs["Color2"])
-
-    ramp_rough = nodes.new("ShaderNodeValToRGB")
-    ramp_rough.location = (50, -200)
-    ramp_rough.color_ramp.elements[0].position = 0.2
-    ramp_rough.color_ramp.elements[0].color    = (0.7, 0.7, 0.7, 1)
-    ramp_rough.color_ramp.elements[1].position = 0.8
-    ramp_rough.color_ramp.elements[1].color    = (0.95, 0.95, 0.95, 1)
-    links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
-
-    bump = nodes.new("ShaderNodeBump")
-    bump.location = (50, -400)
-    bump.inputs["Strength"].default_value  = bump_strength
-    bump.inputs["Distance"].default_value  = 0.05
-    links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
-
-    bsdf_day = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf_day.location = (350, 200)
-    bsdf_day.label = "Day Side"
-    bsdf_day.inputs["Base Color"].default_value         = (*base_color, 1.0)
-    bsdf_day.inputs["Roughness"].default_value          = roughness
-    bsdf_day.inputs["Metallic"].default_value           = metallic
-    bsdf_day.inputs["Specular IOR Level"].default_value = 0.04
-    links.new(img_node.outputs["Color"],   bsdf_day.inputs["Base Color"])
-    links.new(ramp_rough.outputs["Color"], bsdf_day.inputs["Roughness"])
-    links.new(bump.outputs["Normal"],      bsdf_day.inputs["Normal"])
-
-    bsdf_night = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf_night.location = (350, -100)
-    bsdf_night.label = "Night Side"
-    bsdf_night.inputs["Roughness"].default_value          = 1.0
-    bsdf_night.inputs["Metallic"].default_value           = 0.0
-    bsdf_night.inputs["Specular IOR Level"].default_value = 0.0
-
-    darken_night = nodes.new("ShaderNodeMixRGB")
-    darken_night.location = (50, -50)
-    darken_night.label = "Night Darken"
-    darken_night.blend_type = "MULTIPLY"
-    darken_night.inputs["Fac"].default_value = 1.0
-    darken_night.inputs["Color2"].default_value = (0.04, 0.04, 0.06, 1.0)
-    links.new(img_node.outputs["Color"],      darken_night.inputs["Color1"])
-    links.new(darken_night.outputs["Color"],  bsdf_night.inputs["Base Color"])
-    links.new(bump.outputs["Normal"],         bsdf_night.inputs["Normal"])
-
-    diffuse_probe = nodes.new("ShaderNodeBsdfDiffuse")
-    diffuse_probe.location = (350, -380)
-    diffuse_probe.label = "Diffuse Probe"
-    diffuse_probe.inputs["Color"].default_value     = (1.0, 1.0, 1.0, 1.0)
-    diffuse_probe.inputs["Roughness"].default_value = 0.0
-    links.new(bump.outputs["Normal"], diffuse_probe.inputs["Normal"])
-
-    shader_to_rgb = nodes.new("ShaderNodeShaderToRGB")
-    shader_to_rgb.location = (620, -380)
-    shader_to_rgb.label = "Light Probe"
-    links.new(diffuse_probe.outputs["BSDF"], shader_to_rgb.inputs["Shader"])
-
-    terminator_ramp = nodes.new("ShaderNodeValToRGB")
-    terminator_ramp.location = (820, -380)
-    terminator_ramp.label = "Terminator Softness"
-    terminator_ramp.color_ramp.interpolation = 'EASE'
-    terminator_ramp.color_ramp.elements[0].position = 0.30
-    terminator_ramp.color_ramp.elements[0].color    = (0.0, 0.0, 0.0, 1.0)
-    terminator_ramp.color_ramp.elements[1].position = 0.70
-    terminator_ramp.color_ramp.elements[1].color    = (1.0, 1.0, 1.0, 1.0)
-    links.new(shader_to_rgb.outputs["Color"], terminator_ramp.inputs["Fac"])
-
-    mix_day_night = nodes.new("ShaderNodeMixShader")
-    mix_day_night.location = (1100, 100)
-    mix_day_night.label = "Day / Night Mix"
-    links.new(terminator_ramp.outputs["Color"], mix_day_night.inputs["Fac"])
-    links.new(bsdf_night.outputs["BSDF"],       mix_day_night.inputs[1])
-    links.new(bsdf_day.outputs["BSDF"],         mix_day_night.inputs[2])
-    links.new(mix_day_night.outputs["Shader"],  output.inputs["Surface"])
-
-    return mat
-
 bpy.ops.mesh.primitive_uv_sphere_add(
     segments=128,
     ring_count=64,
     radius=2.0,
     location=(0, 0, 0)
 )
-earth = bpy.context.active_object
-earth.name = "Earth"
+jupiter = bpy.context.active_object
+jupiter.name = "Jupiter"
+
+jupiter.scale = (1.0, 1.0, 0.935)
+bpy.ops.object.transform_apply(scale=True)
+
 bpy.ops.object.shade_smooth()
+
 bpy.ops.object.modifier_add(type='SMOOTH')
-earth.modifiers["Smooth"].factor     = 0.5
-earth.modifiers["Smooth"].iterations = 2
+jupiter.modifiers["Smooth"].factor     = 1.0
+jupiter.modifiers["Smooth"].iterations = 3
 
-earth_mat = build_planet_material(
-    name          = "Earth_Material",
-    texture_path  = EARTH_TEXTURE_PATH,
-    base_color    = (0.1, 0.25, 0.5),
-    roughness     = 0.78,
-    noise_scale   = 4.0,
-    bump_strength = 0.4
-)
-earth.data.materials.append(earth_mat)
+mat = bpy.data.materials.new(name="Jupiter_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
 
-MOON_RADIUS       = 0.55
-MOON_ORBIT_RADIUS = 6.5
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1100, 0)
 
-bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
-moon_pivot = bpy.context.active_object
-moon_pivot.name = "Moon_Orbit_Pivot"
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (750, 0)
+bsdf.inputs["Base Color"].default_value         = (0.78, 0.58, 0.38, 1.0)
+bsdf.inputs["Roughness"].default_value          = 0.55
+bsdf.inputs["Metallic"].default_value           = 0.0
+bsdf.inputs["Specular IOR Level"].default_value = 0.15
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
 
-bpy.ops.mesh.primitive_uv_sphere_add(
-    segments=128,
-    ring_count=64,
-    radius=MOON_RADIUS,
-    location=(MOON_ORBIT_RADIUS, 0, 0)
-)
-moon = bpy.context.active_object
-moon.name = "Moon"
-bpy.ops.object.shade_smooth()
-bpy.ops.object.modifier_add(type='SMOOTH')
-moon.modifiers["Smooth"].factor     = 0.5
-moon.modifiers["Smooth"].iterations = 2
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-900, 0)
 
-moon_mat = build_planet_material(
-    name          = "Moon_Material",
-    texture_path  = MOON_TEXTURE_PATH,
-    base_color    = (0.45, 0.43, 0.40),
-    roughness     = 0.92,
-    noise_scale   = 6.0,
-    bump_strength = 0.7
-)
-moon.data.materials.append(moon_mat)
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-700, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
 
-moon.parent = moon_pivot
-moon.matrix_parent_inverse = moon_pivot.matrix_world.inverted()
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location      = (-400, 200)
+img_node.label         = "Jupiter Color Map"
+img_node.interpolation = 'Linear'
+
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Jupiter] Texture loaded: {abs_path}")
+else:
+    print(f"[Jupiter] WARNING – texture not found at: {abs_path}")
+
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
+
+band_noise = nodes.new("ShaderNodeTexNoise")
+band_noise.location = (-400, -100)
+band_noise.label    = "Cloud Band Noise"
+band_noise.inputs["Scale"].default_value      = 2.5
+band_noise.inputs["Detail"].default_value     = 14.0
+band_noise.inputs["Roughness"].default_value  = 0.55
+band_noise.inputs["Distortion"].default_value = 1.2
+links.new(mapping.outputs["Vector"], band_noise.inputs["Vector"])
+
+storm_noise = nodes.new("ShaderNodeTexNoise")
+storm_noise.location = (-400, -320)
+storm_noise.label    = "Storm Detail Noise"
+storm_noise.inputs["Scale"].default_value      = 18.0
+storm_noise.inputs["Detail"].default_value     = 16.0
+storm_noise.inputs["Roughness"].default_value  = 0.75
+storm_noise.inputs["Distortion"].default_value = 0.6
+links.new(mapping.outputs["Vector"], storm_noise.inputs["Vector"])
+
+mix_noise = nodes.new("ShaderNodeMixRGB")
+mix_noise.location   = (50, -200)
+mix_noise.blend_type = "MIX"
+mix_noise.inputs["Fac"].default_value = 0.38
+links.new(band_noise.outputs["Fac"],  mix_noise.inputs["Color1"])
+links.new(storm_noise.outputs["Fac"], mix_noise.inputs["Color2"])
+
+ramp_color = nodes.new("ShaderNodeValToRGB")
+ramp_color.location = (270, -150)
+ramp_color.label    = "Jupiter Band Colors"
+ramp_color.color_ramp.elements[0].position = 0.15
+ramp_color.color_ramp.elements[0].color    = (0.88, 0.75, 0.55, 1)
+ramp_color.color_ramp.elements[1].position = 0.85
+ramp_color.color_ramp.elements[1].color    = (0.52, 0.28, 0.12, 1)
+ramp_color.color_ramp.elements.new(0.50)
+ramp_color.color_ramp.elements[1].color    = (0.78, 0.45, 0.22, 1)
+links.new(mix_noise.outputs["Color"], ramp_color.inputs["Fac"])
+
+mix_tex_bands = nodes.new("ShaderNodeMixRGB")
+mix_tex_bands.location   = (520, 100)
+mix_tex_bands.blend_type = "OVERLAY"
+mix_tex_bands.inputs["Fac"].default_value = 0.25
+links.new(img_node.outputs["Color"],   mix_tex_bands.inputs["Color1"])
+links.new(ramp_color.outputs["Color"], mix_tex_bands.inputs["Color2"])
+links.new(mix_tex_bands.outputs["Color"], bsdf.inputs["Base Color"])
+
+ramp_rough = nodes.new("ShaderNodeValToRGB")
+ramp_rough.location = (270, -380)
+ramp_rough.label    = "Roughness Ramp"
+ramp_rough.color_ramp.elements[0].position = 0.3
+ramp_rough.color_ramp.elements[0].color    = (0.40, 0.40, 0.40, 1)
+ramp_rough.color_ramp.elements[1].position = 0.7
+ramp_rough.color_ramp.elements[1].color    = (0.65, 0.65, 0.65, 1)
+links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
+links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
+
+bump = nodes.new("ShaderNodeBump")
+bump.location = (270, -560)
+bump.inputs["Strength"].default_value  = 0.15
+bump.inputs["Distance"].default_value  = 0.02
+links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
+links.new(bump.outputs["Normal"],     bsdf.inputs["Normal"])
+
+jupiter.data.materials.append(mat)
 
 bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
 sun = bpy.context.active_object
 sun.name = "Sun_Key"
-sun.data.energy    = 5.0
-sun.data.angle     = 1.2
-sun.data.color     = (1.0, 0.97, 0.88)
+sun.data.energy    = 7.0
+sun.data.angle     = 0.53
+sun.data.color     = (1.0, 0.95, 0.85)
 sun.rotation_euler = (1.5708, 0.0, -1.5708)
 
-bpy.ops.object.light_add(type='POINT', location=(-10, 0, 0))
+bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
 fill = bpy.context.active_object
 fill.name = "Space_Fill"
-fill.data.energy           = 1.2
-fill.data.color            = (0.4, 0.45, 0.65)
-fill.data.shadow_soft_size = 20.0
+fill.data.energy           = 5.0
+fill.data.color            = (0.45, 0.50, 0.70)
+fill.data.shadow_soft_size = 12.0
 
-bpy.ops.object.light_add(type='POINT', location=(-8, 5, 3))
+bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
 fill2 = bpy.context.active_object
 fill2.name = "Space_Fill2"
-fill2.data.energy           = 0.8
-fill2.data.color            = (0.4, 0.45, 0.65)
-fill2.data.shadow_soft_size = 20.0
+fill2.data.energy           = 3.0
+fill2.data.color            = (0.45, 0.50, 0.70)
+fill2.data.shadow_soft_size = 12.0
 
-bpy.ops.object.light_add(type='AREA', location=(-6, 0, 5))
+bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
 rim = bpy.context.active_object
 rim.name = "Rim_Light"
-rim.data.energy        = 3.0
+rim.data.energy        = 6.0
 rim.data.size          = 10.0
-rim.data.color         = (0.65, 0.70, 1.0)
+rim.data.color         = (0.95, 0.80, 0.55)
 rim.rotation_euler     = (1.57, 0, 1.57)
 
 HDR_PATH = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
@@ -318,7 +249,7 @@ output_world.location = (900, 0)
 
 bg_ambient = world_nodes.new("ShaderNodeBackground")
 bg_ambient.location = (300, 100)
-bg_ambient.inputs["Color"].default_value    = (0.02, 0.02, 0.05, 1.0)
+bg_ambient.inputs["Color"].default_value    = (0.10, 0.10, 0.12, 1.0)
 bg_ambient.inputs["Strength"].default_value = 0.5
 
 img_tex = world_nodes.new("ShaderNodeTexImage")
@@ -330,23 +261,24 @@ if os.path.exists(abs_hdr_path):
     hdr_img = bpy.data.images.load(abs_hdr_path)
     hdr_img.colorspace_settings.name = 'sRGB'
     img_tex.image = hdr_img
-    print(f"[World] Background loaded: {abs_hdr_path}")
+    print(f"[World] Background image loaded: {abs_hdr_path}")
 else:
-    print(f"[World] WARNING – HDR not found: {abs_hdr_path}")
+    print(f"[World] WARNING – image not found at: {abs_hdr_path}")
 
-tex_coord_w = world_nodes.new("ShaderNodeTexCoord")
-tex_coord_w.location = (-600, -150)
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
 
-mapping_w = world_nodes.new("ShaderNodeMapping")
-mapping_w.location = (-400, -150)
-mapping_w.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
 
-world_links.new(tex_coord_w.outputs["Window"], mapping_w.inputs["Vector"])
-world_links.new(mapping_w.outputs["Vector"],   img_tex.inputs["Vector"])
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"],   img_tex.inputs["Vector"])
 
 bg_image = world_nodes.new("ShaderNodeBackground")
 bg_image.location = (300, -150)
 bg_image.inputs["Strength"].default_value = 1.0
+
 world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
 
 light_path = world_nodes.new("ShaderNodeLightPath")
@@ -360,11 +292,12 @@ world_links.new(bg_ambient.outputs["Background"],    mix_shader.inputs[1])
 world_links.new(bg_image.outputs["Background"],      mix_shader.inputs[2])
 world_links.new(mix_shader.outputs["Shader"],        output_world.inputs["Surface"])
 
-bpy.ops.object.camera_add(location=(0, -18, 5))
+bpy.ops.object.camera_add(location=(0, -12, 0))
 cam = bpy.context.active_object
 cam.name = "Camera"
-cam.rotation_euler    = (1.28, 0.0, 0.0)
-cam.data.lens         = 45
+cam.rotation_euler = (1.5708, 0.0, 0.0)
+cam.data.lens = 50
+
 bpy.context.scene.camera = cam
 
 scene = bpy.context.scene
@@ -381,61 +314,52 @@ scene.render.resolution_percentage = 100
 scene.view_settings.view_transform = 'Filmic'
 scene.view_settings.look           = 'Medium High Contrast'
 scene.view_settings.exposure       = 0.2
-scene.view_settings.gamma          = 1.1
+scene.view_settings.gamma          = 1.0
 
-scene.render.image_settings.file_format = 'FFMPEG'
-ffmpeg = scene.render.ffmpeg
-ffmpeg.format               = 'MPEG4'
-ffmpeg.codec                = 'H264'
-ffmpeg.constant_rate_factor = 'HIGH'
-ffmpeg.ffmpeg_preset        = 'GOOD'
-ffmpeg.audio_codec          = 'NONE'
+scene.render.image_settings.file_format  = 'FFMPEG'
+scene.render.ffmpeg.format               = 'MPEG4'
+scene.render.ffmpeg.codec                = 'H264'
+scene.render.ffmpeg.constant_rate_factor = 'HIGH'
+scene.render.ffmpeg.ffmpeg_preset        = 'GOOD'
+scene.render.ffmpeg.audio_codec          = 'NONE'
+
 scene.render.filepath = OUTPUT_PATH
 
 scene.frame_start = 1
 scene.frame_end   = TOTAL_FRAMES
 scene.render.fps  = FPS
 
-earth_tilt_rad     = math.radians(EARTH_AXIAL_TILT_DEGREES)
-moon_tilt_rad      = math.radians(MOON_AXIAL_TILT_DEGREES)
-moon_orbit_incline = math.radians(5.14)
+bpy.context.view_layer.objects.active = jupiter
+jupiter.select_set(True)
+
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
 
 print("\n" + "=" * 60)
-print("EARTH + MOON — SEAMLESS LOOP VIDEO")
+print("JUPITER ROTATION ANIMATION — SEAMLESS LOOP")
 print("=" * 60)
 print(f"Total frames         : {TOTAL_FRAMES}")
 print(f"Frame rate           : {FPS} fps")
 print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
-print(f"Earth rotation       : 360° seamless loop (baseline speed)")
-print(f"Moon orbit           : full orbit seamless loop")
-print(f"Output               : {OUTPUT_PATH}")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 2.4× faster (100 vs 240 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}° (nearly upright)")
+print(f"Equatorial bulge     : applied (0.935 Z scale)")
 print("=" * 60 + "\n")
 
 for frame_num in range(scene.frame_start, scene.frame_end + 1):
     scene.frame_set(frame_num)
 
     progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * 360.0)
 
-    earth_z = math.radians(progress * 360.0 * EARTH_ROTATION_MULTIPLIER)
-    earth.rotation_euler = (earth_tilt_rad, 0.0, earth_z)
-    earth.keyframe_insert(data_path="rotation_euler", index=0)
-    earth.keyframe_insert(data_path="rotation_euler", index=2)
+    jupiter.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
-    moon_orbit_z = math.radians(progress * 360.0 * MOON_ORBIT_SPEED)
-    moon_pivot.rotation_euler = (moon_orbit_incline, 0.0, moon_orbit_z)
-    moon_pivot.keyframe_insert(data_path="rotation_euler", index=0)
-    moon_pivot.keyframe_insert(data_path="rotation_euler", index=2)
+    jupiter.keyframe_insert(data_path="rotation_euler", index=0)
+    jupiter.keyframe_insert(data_path="rotation_euler", index=2)
 
-    moon_self_z = -moon_orbit_z
-    moon.rotation_euler = (moon_tilt_rad, 0.0, moon_self_z)
-    moon.keyframe_insert(data_path="rotation_euler", index=0)
-    moon.keyframe_insert(data_path="rotation_euler", index=2)
-
-for obj in [earth, moon_pivot, moon]:
-    if obj.animation_data and obj.animation_data.action:
-        for fc in obj.animation_data.action.fcurves:
-            for kp in fc.keyframe_points:
-                kp.interpolation = 'LINEAR'
+for fc in jupiter.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
 
 scene.frame_set(1)
 
@@ -455,7 +379,7 @@ print("=" * 60 + "\n")
             <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
             <ul class="script-notes-list">
               <li>Replace the placeholder code above with your actual Blender Python script.</li>
-              <li>The orbital period of Earth is 365.25 Earth days.</li>
+              <li>Jupiter takes about 12 Earth years to complete one orbit around the Sun.</li>
               <li>Distance is scaled for visualization — not true astronomical units.</li>
             </ul>
           </div>
@@ -498,7 +422,7 @@ print("=" * 60 + "\n")
           var url = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = url;
-          a.download = 'earth.py';
+          a.download = 'jupiter.py';
           a.click();
           URL.revokeObjectURL(url);
         });

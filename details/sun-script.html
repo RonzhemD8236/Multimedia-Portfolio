@@ -54,17 +54,13 @@ import bpy
 import os
 import math
 
-EARTH_TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_earth.jpg"
-MOON_TEXTURE_PATH  = "C:/Users/Ronzhem Dioso/Downloads/8k_moon.jpg"
-OUTPUT_PATH        = "C:/Users/Ronzhem Dioso/Downloads/earth_render.mp4"
+TEXTURE_PATH = "add texture path here (e.g. C:/Users/user name/Downloads/sun_texture.jpg)"
+OUTPUT_PATH  = "add output path here (e.g. C:/Users/user name/Downloads/sun_animation.mp4)"
 
-EARTH_AXIAL_TILT_DEGREES  = 23.5
-MOON_AXIAL_TILT_DEGREES   = 6.68
+AXIAL_TILT_DEGREES = 7.25
 
-TOTAL_FRAMES              = 240
-FPS                       = 24
-EARTH_ROTATION_MULTIPLIER = 1.0
-MOON_ORBIT_SPEED          = 1.0
+TOTAL_FRAMES = 480
+FPS          = 24
 
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
@@ -74,224 +70,124 @@ for block in bpy.data.materials: bpy.data.materials.remove(block)
 for block in bpy.data.images:    bpy.data.images.remove(block)
 for block in bpy.data.lights:    bpy.data.lights.remove(block)
 
-def build_planet_material(name, texture_path, base_color,
-                           roughness=0.85, metallic=0.0,
-                           noise_scale=4.0, bump_strength=0.5):
-    mat = bpy.data.materials.new(name=name)
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    nodes.clear()
-
-    output = nodes.new("ShaderNodeOutputMaterial")
-    output.location = (1400, 0)
-
-    tex_coord = nodes.new("ShaderNodeTexCoord")
-    tex_coord.location = (-900, 0)
-
-    mapping = nodes.new("ShaderNodeMapping")
-    mapping.location = (-700, 0)
-    mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
-    links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
-
-    img_node = nodes.new("ShaderNodeTexImage")
-    img_node.location = (-450, 200)
-    img_node.label = f"{name} Color Map"
-
-    abs_path = bpy.path.abspath(texture_path)
-    if os.path.exists(abs_path):
-        img = bpy.data.images.load(abs_path)
-        img_node.image = img
-        print(f"[{name}] Texture loaded: {abs_path}")
-    else:
-        print(f"[{name}] WARNING – texture not found: {abs_path}")
-
-    links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
-
-    noise1 = nodes.new("ShaderNodeTexNoise")
-    noise1.location = (-450, -100)
-    noise1.inputs["Scale"].default_value      = noise_scale
-    noise1.inputs["Detail"].default_value     = 10.0
-    noise1.inputs["Roughness"].default_value  = 0.8
-    noise1.inputs["Distortion"].default_value = 0.3
-    links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
-
-    noise2 = nodes.new("ShaderNodeTexNoise")
-    noise2.location = (-450, -320)
-    noise2.inputs["Scale"].default_value      = noise_scale * 5
-    noise2.inputs["Detail"].default_value     = 15.0
-    noise2.inputs["Roughness"].default_value  = 0.9
-    noise2.inputs["Distortion"].default_value = 0.1
-    links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
-
-    mix_noise = nodes.new("ShaderNodeMixRGB")
-    mix_noise.location = (-200, -200)
-    mix_noise.blend_type = "MIX"
-    mix_noise.inputs["Fac"].default_value = 0.4
-    links.new(noise1.outputs["Fac"], mix_noise.inputs["Color1"])
-    links.new(noise2.outputs["Fac"], mix_noise.inputs["Color2"])
-
-    ramp_rough = nodes.new("ShaderNodeValToRGB")
-    ramp_rough.location = (50, -200)
-    ramp_rough.color_ramp.elements[0].position = 0.2
-    ramp_rough.color_ramp.elements[0].color    = (0.7, 0.7, 0.7, 1)
-    ramp_rough.color_ramp.elements[1].position = 0.8
-    ramp_rough.color_ramp.elements[1].color    = (0.95, 0.95, 0.95, 1)
-    links.new(mix_noise.outputs["Color"], ramp_rough.inputs["Fac"])
-
-    bump = nodes.new("ShaderNodeBump")
-    bump.location = (50, -400)
-    bump.inputs["Strength"].default_value  = bump_strength
-    bump.inputs["Distance"].default_value  = 0.05
-    links.new(mix_noise.outputs["Color"], bump.inputs["Height"])
-
-    bsdf_day = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf_day.location = (350, 200)
-    bsdf_day.label = "Day Side"
-    bsdf_day.inputs["Base Color"].default_value         = (*base_color, 1.0)
-    bsdf_day.inputs["Roughness"].default_value          = roughness
-    bsdf_day.inputs["Metallic"].default_value           = metallic
-    bsdf_day.inputs["Specular IOR Level"].default_value = 0.04
-    links.new(img_node.outputs["Color"],   bsdf_day.inputs["Base Color"])
-    links.new(ramp_rough.outputs["Color"], bsdf_day.inputs["Roughness"])
-    links.new(bump.outputs["Normal"],      bsdf_day.inputs["Normal"])
-
-    bsdf_night = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf_night.location = (350, -100)
-    bsdf_night.label = "Night Side"
-    bsdf_night.inputs["Roughness"].default_value          = 1.0
-    bsdf_night.inputs["Metallic"].default_value           = 0.0
-    bsdf_night.inputs["Specular IOR Level"].default_value = 0.0
-
-    darken_night = nodes.new("ShaderNodeMixRGB")
-    darken_night.location = (50, -50)
-    darken_night.label = "Night Darken"
-    darken_night.blend_type = "MULTIPLY"
-    darken_night.inputs["Fac"].default_value = 1.0
-    darken_night.inputs["Color2"].default_value = (0.04, 0.04, 0.06, 1.0)
-    links.new(img_node.outputs["Color"],      darken_night.inputs["Color1"])
-    links.new(darken_night.outputs["Color"],  bsdf_night.inputs["Base Color"])
-    links.new(bump.outputs["Normal"],         bsdf_night.inputs["Normal"])
-
-    diffuse_probe = nodes.new("ShaderNodeBsdfDiffuse")
-    diffuse_probe.location = (350, -380)
-    diffuse_probe.label = "Diffuse Probe"
-    diffuse_probe.inputs["Color"].default_value     = (1.0, 1.0, 1.0, 1.0)
-    diffuse_probe.inputs["Roughness"].default_value = 0.0
-    links.new(bump.outputs["Normal"], diffuse_probe.inputs["Normal"])
-
-    shader_to_rgb = nodes.new("ShaderNodeShaderToRGB")
-    shader_to_rgb.location = (620, -380)
-    shader_to_rgb.label = "Light Probe"
-    links.new(diffuse_probe.outputs["BSDF"], shader_to_rgb.inputs["Shader"])
-
-    terminator_ramp = nodes.new("ShaderNodeValToRGB")
-    terminator_ramp.location = (820, -380)
-    terminator_ramp.label = "Terminator Softness"
-    terminator_ramp.color_ramp.interpolation = 'EASE'
-    terminator_ramp.color_ramp.elements[0].position = 0.30
-    terminator_ramp.color_ramp.elements[0].color    = (0.0, 0.0, 0.0, 1.0)
-    terminator_ramp.color_ramp.elements[1].position = 0.70
-    terminator_ramp.color_ramp.elements[1].color    = (1.0, 1.0, 1.0, 1.0)
-    links.new(shader_to_rgb.outputs["Color"], terminator_ramp.inputs["Fac"])
-
-    mix_day_night = nodes.new("ShaderNodeMixShader")
-    mix_day_night.location = (1100, 100)
-    mix_day_night.label = "Day / Night Mix"
-    links.new(terminator_ramp.outputs["Color"], mix_day_night.inputs["Fac"])
-    links.new(bsdf_night.outputs["BSDF"],       mix_day_night.inputs[1])
-    links.new(bsdf_day.outputs["BSDF"],         mix_day_night.inputs[2])
-    links.new(mix_day_night.outputs["Shader"],  output.inputs["Surface"])
-
-    return mat
-
 bpy.ops.mesh.primitive_uv_sphere_add(
     segments=128,
     ring_count=64,
     radius=2.0,
     location=(0, 0, 0)
 )
-earth = bpy.context.active_object
-earth.name = "Earth"
+sun_obj = bpy.context.active_object
+sun_obj.name = "Sun"
+
 bpy.ops.object.shade_smooth()
-bpy.ops.object.modifier_add(type='SMOOTH')
-earth.modifiers["Smooth"].factor     = 0.5
-earth.modifiers["Smooth"].iterations = 2
 
-earth_mat = build_planet_material(
-    name          = "Earth_Material",
-    texture_path  = EARTH_TEXTURE_PATH,
-    base_color    = (0.1, 0.25, 0.5),
-    roughness     = 0.78,
-    noise_scale   = 4.0,
-    bump_strength = 0.4
-)
-earth.data.materials.append(earth_mat)
+mat = bpy.data.materials.new(name="Sun_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
 
-MOON_RADIUS       = 0.55
-MOON_ORBIT_RADIUS = 6.5
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1000, 0)
 
-bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
-moon_pivot = bpy.context.active_object
-moon_pivot.name = "Moon_Orbit_Pivot"
+emission = nodes.new("ShaderNodeEmission")
+emission.location = (650, 0)
+emission.inputs["Strength"].default_value = 6.0
+links.new(emission.outputs["Emission"], output.inputs["Surface"])
 
-bpy.ops.mesh.primitive_uv_sphere_add(
-    segments=128,
-    ring_count=64,
-    radius=MOON_RADIUS,
-    location=(MOON_ORBIT_RADIUS, 0, 0)
-)
-moon = bpy.context.active_object
-moon.name = "Moon"
-bpy.ops.object.shade_smooth()
-bpy.ops.object.modifier_add(type='SMOOTH')
-moon.modifiers["Smooth"].factor     = 0.5
-moon.modifiers["Smooth"].iterations = 2
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-700, 0)
 
-moon_mat = build_planet_material(
-    name          = "Moon_Material",
-    texture_path  = MOON_TEXTURE_PATH,
-    base_color    = (0.45, 0.43, 0.40),
-    roughness     = 0.92,
-    noise_scale   = 6.0,
-    bump_strength = 0.7
-)
-moon.data.materials.append(moon_mat)
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-500, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
 
-moon.parent = moon_pivot
-moon.matrix_parent_inverse = moon_pivot.matrix_world.inverted()
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location = (-250, 150)
+img_node.label = "Sun Color Map"
 
-bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
-sun = bpy.context.active_object
-sun.name = "Sun_Key"
-sun.data.energy    = 5.0
-sun.data.angle     = 1.2
-sun.data.color     = (1.0, 0.97, 0.88)
-sun.rotation_euler = (1.5708, 0.0, -1.5708)
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Sun] Texture loaded: {abs_path}")
+else:
+    print(f"[Sun] WARNING – texture not found at: {abs_path}")
 
-bpy.ops.object.light_add(type='POINT', location=(-10, 0, 0))
-fill = bpy.context.active_object
-fill.name = "Space_Fill"
-fill.data.energy           = 1.2
-fill.data.color            = (0.4, 0.45, 0.65)
-fill.data.shadow_soft_size = 20.0
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
 
-bpy.ops.object.light_add(type='POINT', location=(-8, 5, 3))
-fill2 = bpy.context.active_object
-fill2.name = "Space_Fill2"
-fill2.data.energy           = 0.8
-fill2.data.color            = (0.4, 0.45, 0.65)
-fill2.data.shadow_soft_size = 20.0
+mix_color = nodes.new("ShaderNodeMix")
+mix_color.location = (200, 100)
+mix_color.data_type = 'RGBA'
+mix_color.blend_type = "MULTIPLY"
+mix_color.inputs["Factor"].default_value = 0.35
+mix_color.inputs["B"].default_value = (1.0, 0.55, 0.1, 1.0)
+links.new(img_node.outputs["Color"], mix_color.inputs["A"])
+links.new(mix_color.outputs["Result"], emission.inputs["Color"])
 
-bpy.ops.object.light_add(type='AREA', location=(-6, 0, 5))
+noise1 = nodes.new("ShaderNodeTexNoise")
+noise1.location = (-250, -200)
+noise1.label = "Solar Granules"
+noise1.inputs["Scale"].default_value      = 12.0
+noise1.inputs["Detail"].default_value     = 10.0
+noise1.inputs["Roughness"].default_value  = 0.65
+noise1.inputs["Distortion"].default_value = 0.4
+links.new(mapping.outputs["Vector"], noise1.inputs["Vector"])
+
+noise2 = nodes.new("ShaderNodeTexNoise")
+noise2.location = (-250, -400)
+noise2.label = "Fine Turbulence"
+noise2.inputs["Scale"].default_value      = 30.0
+noise2.inputs["Detail"].default_value     = 15.0
+noise2.inputs["Roughness"].default_value  = 0.8
+noise2.inputs["Distortion"].default_value = 0.2
+links.new(mapping.outputs["Vector"], noise2.inputs["Vector"])
+
+mix_noise = nodes.new("ShaderNodeMix")
+mix_noise.location = (50, -300)
+mix_noise.data_type = 'RGBA'
+mix_noise.blend_type = "MIX"
+mix_noise.inputs["Factor"].default_value = 0.45
+links.new(noise1.outputs["Fac"], mix_noise.inputs["A"])
+links.new(noise2.outputs["Fac"], mix_noise.inputs["B"])
+
+ramp = nodes.new("ShaderNodeValToRGB")
+ramp.location = (250, -300)
+ramp.label = "Emission Variation Ramp"
+ramp.color_ramp.elements[0].position = 0.3
+ramp.color_ramp.elements[0].color    = (0.85, 0.4, 0.05, 1.0)
+ramp.color_ramp.elements[1].position = 0.75
+ramp.color_ramp.elements[1].color    = (1.0, 0.85, 0.4, 1.0)
+links.new(mix_noise.outputs["Result"], ramp.inputs["Fac"])
+
+mix_final = nodes.new("ShaderNodeMix")
+mix_final.location = (450, 0)
+mix_final.data_type = 'RGBA'
+mix_final.blend_type = "OVERLAY"
+mix_final.inputs["Factor"].default_value = 0.25
+links.new(mix_color.outputs["Result"], mix_final.inputs["A"])
+links.new(ramp.outputs["Color"],       mix_final.inputs["B"])
+links.new(mix_final.outputs["Result"], emission.inputs["Color"])
+
+sun_obj.data.materials.append(mat)
+
+bpy.ops.object.light_add(type='POINT', location=(0, 0, 0))
+core_light = bpy.context.active_object
+core_light.name = "Sun_Core_Light"
+core_light.data.energy           = 5000.0
+core_light.data.color            = (1.0, 0.9, 0.6)
+core_light.data.shadow_soft_size = 2.0
+
+bpy.ops.object.light_add(type='AREA', location=(0, -6, 3))
 rim = bpy.context.active_object
-rim.name = "Rim_Light"
-rim.data.energy        = 3.0
-rim.data.size          = 10.0
-rim.data.color         = (0.65, 0.70, 1.0)
-rim.rotation_euler     = (1.57, 0, 1.57)
+rim.name = "Corona_Rim"
+rim.data.energy    = 80.0
+rim.data.size      = 10.0
+rim.data.color     = (1.0, 0.75, 0.3)
+rim.rotation_euler = (1.57, 0, 0)
 
-HDR_PATH = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
+HDR_PATH = "add HDR path here (e.g. C:/Users/user name/Downloads/space_hdr.hdr)"
 
 world = bpy.data.worlds["World"]
 world.use_nodes = True
@@ -305,7 +201,7 @@ output_world.location = (900, 0)
 bg_ambient = world_nodes.new("ShaderNodeBackground")
 bg_ambient.location = (300, 100)
 bg_ambient.inputs["Color"].default_value    = (0.02, 0.02, 0.05, 1.0)
-bg_ambient.inputs["Strength"].default_value = 0.5
+bg_ambient.inputs["Strength"].default_value = 0.3
 
 img_tex = world_nodes.new("ShaderNodeTexImage")
 img_tex.location  = (-200, -150)
@@ -316,19 +212,19 @@ if os.path.exists(abs_hdr_path):
     hdr_img = bpy.data.images.load(abs_hdr_path)
     hdr_img.colorspace_settings.name = 'sRGB'
     img_tex.image = hdr_img
-    print(f"[World] Background loaded: {abs_hdr_path}")
+    print(f"[World] Background image loaded: {abs_hdr_path}")
 else:
-    print(f"[World] WARNING – HDR not found: {abs_hdr_path}")
+    print(f"[World] WARNING – image not found at: {abs_hdr_path}")
 
-tex_coord_w = world_nodes.new("ShaderNodeTexCoord")
-tex_coord_w.location = (-600, -150)
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
 
-mapping_w = world_nodes.new("ShaderNodeMapping")
-mapping_w.location = (-400, -150)
-mapping_w.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
 
-world_links.new(tex_coord_w.outputs["Window"], mapping_w.inputs["Vector"])
-world_links.new(mapping_w.outputs["Vector"],   img_tex.inputs["Vector"])
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"],   img_tex.inputs["Vector"])
 
 bg_image = world_nodes.new("ShaderNodeBackground")
 bg_image.location = (300, -150)
@@ -346,11 +242,12 @@ world_links.new(bg_ambient.outputs["Background"],    mix_shader.inputs[1])
 world_links.new(bg_image.outputs["Background"],      mix_shader.inputs[2])
 world_links.new(mix_shader.outputs["Shader"],        output_world.inputs["Surface"])
 
-bpy.ops.object.camera_add(location=(0, -18, 5))
+bpy.ops.object.camera_add(location=(0, -12, 0))
 cam = bpy.context.active_object
 cam.name = "Camera"
-cam.rotation_euler    = (1.28, 0.0, 0.0)
-cam.data.lens         = 45
+cam.rotation_euler    = (1.5708, 0.0, 0.0)
+cam.data.lens         = 50
+
 bpy.context.scene.camera = cam
 
 scene = bpy.context.scene
@@ -358,16 +255,18 @@ scene.render.engine        = 'CYCLES'
 scene.cycles.device        = 'GPU'
 scene.cycles.samples       = 128
 scene.cycles.use_denoising = True
-scene.cycles.denoiser      = 'OPENIMAGEDENOISE'
+scene.view_layers[0].cycles.use_denoising          = True
+scene.view_layers[0].cycles.denoising_store_passes = False
+scene.cycles.denoiser = 'OPENIMAGEDENOISE'
 
 scene.render.resolution_x          = 1920
 scene.render.resolution_y          = 1080
 scene.render.resolution_percentage = 100
 
 scene.view_settings.view_transform = 'Filmic'
-scene.view_settings.look           = 'Medium High Contrast'
-scene.view_settings.exposure       = 0.2
-scene.view_settings.gamma          = 1.1
+scene.view_settings.look           = 'High Contrast'
+scene.view_settings.exposure       = 0.3
+scene.view_settings.gamma          = 1.0
 
 scene.render.image_settings.file_format = 'FFMPEG'
 ffmpeg = scene.render.ffmpeg
@@ -376,52 +275,43 @@ ffmpeg.codec                = 'H264'
 ffmpeg.constant_rate_factor = 'HIGH'
 ffmpeg.ffmpeg_preset        = 'GOOD'
 ffmpeg.audio_codec          = 'NONE'
+
 scene.render.filepath = OUTPUT_PATH
 
 scene.frame_start = 1
 scene.frame_end   = TOTAL_FRAMES
 scene.render.fps  = FPS
 
-earth_tilt_rad     = math.radians(EARTH_AXIAL_TILT_DEGREES)
-moon_tilt_rad      = math.radians(MOON_AXIAL_TILT_DEGREES)
-moon_orbit_incline = math.radians(5.14)
+bpy.context.view_layer.objects.active = sun_obj
+sun_obj.select_set(True)
+
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
 
 print("\n" + "=" * 60)
-print("EARTH + MOON — SEAMLESS LOOP VIDEO")
+print("SUN ROTATION ANIMATION — SEAMLESS LOOP")
 print("=" * 60)
 print(f"Total frames         : {TOTAL_FRAMES}")
 print(f"Frame rate           : {FPS} fps")
 print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
-print(f"Earth rotation       : 360° seamless loop (baseline speed)")
-print(f"Moon orbit           : full orbit seamless loop")
-print(f"Output               : {OUTPUT_PATH}")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 2.0× slower (480 vs 240 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}°")
 print("=" * 60 + "\n")
 
 for frame_num in range(scene.frame_start, scene.frame_end + 1):
     scene.frame_set(frame_num)
 
     progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * 360.0)
 
-    earth_z = math.radians(progress * 360.0 * EARTH_ROTATION_MULTIPLIER)
-    earth.rotation_euler = (earth_tilt_rad, 0.0, earth_z)
-    earth.keyframe_insert(data_path="rotation_euler", index=0)
-    earth.keyframe_insert(data_path="rotation_euler", index=2)
+    sun_obj.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
-    moon_orbit_z = math.radians(progress * 360.0 * MOON_ORBIT_SPEED)
-    moon_pivot.rotation_euler = (moon_orbit_incline, 0.0, moon_orbit_z)
-    moon_pivot.keyframe_insert(data_path="rotation_euler", index=0)
-    moon_pivot.keyframe_insert(data_path="rotation_euler", index=2)
+    sun_obj.keyframe_insert(data_path="rotation_euler", index=0)
+    sun_obj.keyframe_insert(data_path="rotation_euler", index=2)
 
-    moon_self_z = -moon_orbit_z
-    moon.rotation_euler = (moon_tilt_rad, 0.0, moon_self_z)
-    moon.keyframe_insert(data_path="rotation_euler", index=0)
-    moon.keyframe_insert(data_path="rotation_euler", index=2)
-
-for obj in [earth, moon_pivot, moon]:
-    if obj.animation_data and obj.animation_data.action:
-        for fc in obj.animation_data.action.fcurves:
-            for kp in fc.keyframe_points:
-                kp.interpolation = 'LINEAR'
+for fc in sun_obj.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
 
 scene.frame_set(1)
 

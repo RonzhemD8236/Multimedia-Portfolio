@@ -852,3 +852,6 @@ video.celestial-img:hover {
   opacity: 1;
 }
 
+.celestial-info {
+  min-height: 480px;
+}

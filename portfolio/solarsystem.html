@@ -336,12 +336,14 @@
             '<video class="celestial-img" src="' + escapeHTML(p.image) + '" autoplay loop muted playsinline style="pointer-events:none;" aria-label="' + escapeHTML(p.name) + ' animation" onerror="this.style.display=\'none\'"></video>' :
             '<img src="' + escapeHTML(p.image) + '" alt="' + escapeHTML(p.name) + '" class="celestial-img" style="pointer-events:none;" onerror="this.style.display=\'none\'">';
 
-          var statsExtra = !p.isSun ?
-            '<div class="celestial-stat-row"><span class="celestial-stat-label">Revolutions:</span><span class="celestial-stat-value">' + revStr + '</span></div>' +
-            '<div class="celestial-stat-row"><span class="celestial-stat-label">Orbital Period:</span><span class="celestial-stat-value">' + periodStr + '</span></div>' +
-            '<div class="celestial-stat-row"><span class="celestial-stat-label">Distance from Sun:</span><span class="celestial-stat-value">' + escapeHTML(p.distance) + '</span></div>' :
-            '';
-
+         var statsExtra = p.isSun ?
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Star Type:</span><span class="celestial-stat-value">Yellow Dwarf</span></div>' +
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Radius:</span><span class="celestial-stat-value">695,700 km</span></div>' +
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Temperature:</span><span class="celestial-stat-value">5,973°C to 15,000,000°C</span></div>' :
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Revolutions:</span><span class="celestial-stat-value">' + revStr + '</span></div>' +
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Orbital Period:</span><span class="celestial-stat-value">' + periodStr + '</span></div>' +
+          '<div class="celestial-stat-row"><span class="celestial-stat-label">Distance from Sun:</span><span class="celestial-stat-value">' + escapeHTML(p.distance) + '</span></div>';
+  
           var detailsLinks =
             '<div class="celestial-details-links">' +
               '<a href="' + escapeHTML(p.scriptUrl) + '" class="celestial-details-link" aria-label="View script for ' + escapeHTML(p.name) + '">View Script</a>' +
